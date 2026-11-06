@@ -1,0 +1,16 @@
+{
+  "name": "Planner do Criador 2027",
+  "short_name": "Planner",
+  "description": "Planner para criadores de conteúdo",
+  "start_url": "./#/app",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFCF8",
+  "theme_color": "#FF3D77",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
