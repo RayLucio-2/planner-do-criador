@@ -1,0 +1,7 @@
+# Scripts de shell precisam de LF; o resto segue o padrão do sistema
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.sql text eol=lf
+*.webp binary
+*.png binary
+*.pdf binary

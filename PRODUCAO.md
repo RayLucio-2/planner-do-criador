@@ -26,6 +26,15 @@ Se o repositório já tiver um README, rode antes do push: `git pull origin main
 1. Em supabase.com, crie um projeto. Região: **South America (São Paulo)**. Anote a **senha do banco**.
 2. Na pasta do projeto, rode:
 
+**Windows (PowerShell):**
+
+```powershell
+npm install
+powershell -ExecutionPolicy Bypass -File scripts\subir-producao.ps1
+```
+
+**Mac, Linux ou Git Bash:**
+
 ```bash
 npm install
 bash scripts/subir-producao.sh
@@ -65,8 +74,8 @@ Sem domínio próprio ainda? Pule este passo para testar, mas não lance sem ele
    - Copie o **Signing secret** (`whsec_...`).
 5. Rode o script de novo e, desta vez, informe a **Secret key** e o **whsec_**:
 
-```bash
-bash scripts/subir-producao.sh
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\subir-producao.ps1
 ```
 
 Comece com as chaves de **teste** do Stripe (`sk_test_...`), faça uma compra com o cartão `4242 4242 4242 4242` e, quando tudo funcionar, troque pelas chaves de produção.

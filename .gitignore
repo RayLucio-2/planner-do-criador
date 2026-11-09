@@ -5,4 +5,5 @@ dist
 !.env.example
 supabase/.temp
 supabase/.agendar-lembretes.sql
+*.zip
 .DS_Store
