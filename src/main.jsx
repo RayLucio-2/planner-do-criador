@@ -14,6 +14,7 @@ import { MesesIndex, Mes } from './pages/app/Mes'
 import { Semestre, Fechamento, Fim, Ano, Ideias, Notas } from './pages/app/Revisoes'
 import Perfil, { Paywall } from './pages/app/Perfil'
 import BoasVindas from './pages/app/BoasVindas'
+import Convite from './pages/Convite'
 import { Termos, Privacidade } from './pages/Legal'
 import Cookies, { RotaMedida } from './components/Cookies'
 
@@ -37,6 +38,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/boas-vindas" element={<Guard><BoasVindas /></Guard>} />
         <Route path="/entrar" element={<Entrar />} />
+        <Route path="/convite" element={<Convite />} />
         <Route path="/app" element={<Guard><Shell /></Guard>}>
           <Route index element={<Home />} />
           <Route path="carta" element={<Carta />} />
