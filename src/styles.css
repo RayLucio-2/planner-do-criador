@@ -522,3 +522,4 @@ html{color-scheme:light}
 .bonus .pill{align-self:flex-start}
 .bonus b{font-family:var(--disp);font-size:18px;font-weight:800;letter-spacing:-.01em;margin-top:4px}
 .bonus p{font-size:14px;color:var(--ink2)}
+.isca{scroll-margin-top:70px}

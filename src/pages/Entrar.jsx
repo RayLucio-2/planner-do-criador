@@ -4,11 +4,12 @@ import { useAuth } from '../lib/auth'
 import { DEMO, DIAS_TESTE } from '../lib/supabase'
 import { Ic } from '../components/ui'
 import { track } from '../lib/analytics'
+const LANCADO = import.meta.env.VITE_LANCADO === 'true'
 
 export default function Entrar() {
   const [sp] = useSearchParams()
   const auth = useAuth()
-  const [modo, setModo] = useState(sp.get('criar') ? 'criar' : 'entrar')
+  const [modo, setModo] = useState(sp.get('criar') && LANCADO ? 'criar' : 'entrar')
   const [email, setEmail] = useState(''); const [senha, setSenha] = useState(''); const [nome, setNome] = useState('')
   const [msg, setMsg] = useState(null); const [busy, setBusy] = useState(false); const [aceite, setAceite] = useState(false)
 
@@ -43,8 +44,9 @@ export default function Entrar() {
           <>
             <div className="seg">
               <button className={modo === 'entrar' ? 'on' : ''} onClick={() => setModo('entrar')}>Entrar</button>
-              <button className={modo === 'criar' ? 'on' : ''} onClick={() => setModo('criar')}>Criar conta</button>
+              {LANCADO && <button className={modo === 'criar' ? 'on' : ''} onClick={() => setModo('criar')}>Criar conta</button>}
             </div>
+            {!LANCADO && modo === 'entrar' && <p className="mut sm">O app ainda não foi lançado. Este acesso é só para a equipe. <Link to="/">Entre na lista de espera</Link>.</p>}
             {modo === 'criar' && <p className="mut sm">{DIAS_TESTE} dias grátis. Não pedimos cartão para testar.</p>}
             {modo === 'esqueci' && <p className="mut sm">Digite seu e-mail e enviaremos um link para criar uma nova senha.</p>}
             <form onSubmit={go}>

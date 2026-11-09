@@ -6,6 +6,8 @@ Um único projeto que é ao mesmo tempo:
 - **App do planner** (`/#/app`): calendário editorial, roteiros ilimitados, análise e negócio do mês com somas automáticas, guia, ferramentas, revisões e retrospectiva do ano.
 - **App instalável no celular** (PWA): Android e iPhone instalam pelo navegador, sem loja, e abre offline.
 
+**Para colocar no ar, siga o arquivo `PRODUCAO.md` (passo a passo com script automático).**
+
 Sem configurar nada, ele roda em **modo demonstração** (dados só no aparelho).
 
 ## O que tem de novo nesta versão
@@ -31,10 +33,10 @@ npm run dev        # http://localhost:5173
 ## 2. Supabase
 
 1. Crie um projeto em supabase.com.
-2. Em **SQL Editor**, rode **em ordem** `001_planner.sql`, `002_sync_lembretes_conta.sql` e `003_seguranca.sql` (pasta `supabase/migrations/`).
+2. Em **SQL Editor**, rode **em ordem** `20261105000001_planner.sql`, `20261105000002_sync_lembretes_conta.sql` e `20261105000003_seguranca.sql` (pasta `supabase/migrations/`).
 3. **Authentication › URL Configuration**: coloque o endereço do site em *Site URL* e em *Redirect URLs*.
 4. **Project Settings › API**: copie a *Project URL* e a *anon public key* para o `.env` (veja `.env.example`).
-5. Para liberar alguém sem pagamento, use o comando no fim do `001_planner.sql`.
+5. Para liberar alguém sem pagamento, use o comando no fim do `20261105000001_planner.sql`.
 
 ### E-mails (faça antes de lançar)
 
@@ -74,7 +76,7 @@ supabase functions deploy lembretes --no-verify-jwt
 
 - Coloque a chave **pública** em `VITE_VAPID_PUBLIC_KEY`.
 - Em **Database › Extensions**, ative `pg_cron` e `pg_net`.
-- Rode o bloco comentado no fim do `002_sync_lembretes_conta.sql` (troque SEU-PROJETO e a CRON_KEY). Ele chama a função a cada hora; cada pessoa recebe no horário que escolheu, no fuso dela.
+- Rode o bloco comentado no fim do `20261105000002_sync_lembretes_conta.sql` (troque SEU-PROJETO e a CRON_KEY). Ele chama a função a cada hora; cada pessoa recebe no horário que escolheu, no fuso dela.
 
 ## 5. Medição
 

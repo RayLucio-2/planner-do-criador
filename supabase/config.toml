@@ -1,0 +1,11 @@
+# Configuração usada pela Supabase CLI (supabase link / db push / functions deploy)
+project_id = "planner-do-criador"
+
+[functions.assinatura-webhook]
+verify_jwt = false   # o Stripe não manda login; a função confere a assinatura do Stripe
+
+[functions.lembretes]
+verify_jwt = false   # chamada pelo agendador; a função confere a CRON_KEY
+
+[functions.excluir-conta]
+verify_jwt = true    # só a própria pessoa logada pode excluir a conta
