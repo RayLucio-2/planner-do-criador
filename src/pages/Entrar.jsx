@@ -38,9 +38,9 @@ export default function Entrar() {
     }
     if (modo === 'criar') {
       track('cadastro'); track('teste')
-      if (!r.data?.session) pedirCodigo('signup', `Enviamos um código de 6 dígitos para ${email}. Digite abaixo para ativar sua conta.`)
+      if (!r.data?.session) pedirCodigo('signup', `Enviamos um e-mail para ${email}. Digite o código que veio nele ou toque no link do e-mail para ativar sua conta.`)
     }
-    if (modo === 'esqueci') pedirCodigo('recovery', `Enviamos um código de 6 dígitos para ${email}. Digite abaixo para criar uma nova senha.`)
+    if (modo === 'esqueci') pedirCodigo('recovery', `Enviamos um e-mail para ${email}. Digite o código que veio nele ou toque no link do e-mail para criar uma nova senha.`)
   }
 
   async function confirmar(e) {

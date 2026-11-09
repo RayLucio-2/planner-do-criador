@@ -247,6 +247,7 @@ function Isca({ espera }) {
     if (!DEMO) {
       const { error } = await supabase.from('leads').insert({ nome, email, consentimento: true, origem: espera ? 'lista-espera' : 'isca-pdf' })
       if (error) { setBusy(false); setErro('Não consegui registrar agora. Confira o e-mail e tente de novo.'); return }
+      supabase.functions.invoke('enviar-amostra', { body: { email } }).catch(() => {})   // envia o link também por e-mail
     }
     track('lead', { content_name: 'amostra-pdf' }); setOk(true); setBusy(false)
   }
@@ -278,6 +279,7 @@ function Isca({ espera }) {
           <div className="isca-f ok">
             <b>Pronto, {nome.split(' ')[0] || 'criadora'}!</b>
             {espera && <p className="mut">Você está na lista. Assim que o app for lançado, avisamos no seu e-mail.</p>}
+            {!DEMO && <p className="mut sm">Também mandamos o link do PDF para {email}. Confira a caixa de spam se não chegar.</p>}
             {ARTIFACT ? <p className="mut">No site publicado, o PDF baixa neste botão. Nesta demonstração o download fica desativado.</p>
               : <a className="btn big full" href={ISCA} target="_blank" rel="noreferrer"><Ic n="download" s={18} /> Baixar o PDF</a>}
             {espera ? <a className="link" href={IG_URL} target="_blank" rel="noreferrer">Acompanhe os bastidores no @aritamende.s</a>

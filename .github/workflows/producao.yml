@@ -44,3 +44,4 @@ jobs:
           supabase functions deploy assinatura-webhook --use-api
           supabase functions deploy excluir-conta --use-api
           supabase functions deploy lembretes --use-api
+          supabase functions deploy enviar-amostra --use-api

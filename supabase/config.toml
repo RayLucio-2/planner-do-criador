@@ -9,3 +9,6 @@ verify_jwt = false   # chamada pelo agendador; a função confere a CRON_KEY
 
 [functions.excluir-conta]
 verify_jwt = true    # só a própria pessoa logada pode excluir a conta
+
+[functions.enviar-amostra]
+verify_jwt = false   # chamada pela página inicial; só envia para quem acabou de entrar na lista
