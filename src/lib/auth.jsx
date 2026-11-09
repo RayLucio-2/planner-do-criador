@@ -58,6 +58,12 @@ export function AuthProvider({ children }) {
       return supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname })
     },
     async newPassword(password) { return supabase.auth.updateUser({ password }) },
+    // Código de 6 dígitos enviado por e-mail (cadastro ou nova senha)
+    async verifyCode(email, token, type) { return supabase.auth.verifyOtp({ email, token, type }) },
+    async resendCode(email, type) {
+      if (type === 'recovery') return supabase.auth.resetPasswordForEmail(email)
+      return supabase.auth.resend({ type: 'signup', email })
+    },
     async signOut() {
       if (DEMO) { try { localStorage.removeItem('pdc:demo') } catch (e) { /* ok */ } setUser(null); return }
       clearLocal()   // não deixa cópia dos dados no aparelho depois de sair
