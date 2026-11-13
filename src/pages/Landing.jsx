@@ -310,7 +310,7 @@ function ComprarPdf() {
         <form className="isca-f" onSubmit={comprar}>
           <input className="in big" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} required autoComplete="name" />
           <input className="in big" type="email" placeholder="E-mail para receber o PDF" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          <input className="in big" placeholder="CPF (pedido pelo Asaas)" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
+          <input className="in big" placeholder="CPF" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
           <label className={'ck aceite' + (aceite ? ' on' : '')}><input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} required /><span className="box"><Ic n="check" s={12} w={3} /></span><span className="ckl2">Li e aceito os <Link to="/termos">Termos de uso</Link> e a <Link to="/privacidade">Política de privacidade</Link></span></label>
           <button className="btn big full" disabled={busy || !aceite}>{busy ? 'Abrindo o pagamento…' : `Comprar o PDF por ${PRECO_PDF}`}</button>
           {erro && <p className="note err">{erro}</p>}
