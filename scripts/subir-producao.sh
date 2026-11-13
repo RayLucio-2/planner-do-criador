@@ -42,7 +42,7 @@ $SB secrets set "${ARGS[@]}"
 ok "Segredos salvos no Supabase"
 
 cyan "== 5/6 · Publicando as funções =="
-for f in assinatura-webhook excluir-conta lembretes enviar-amostra; do $SB functions deploy "$f" --use-api; done
+for f in assinatura-webhook excluir-conta lembretes enviar-amostra asaas-webhook asaas-checkout asaas-cancelar comprar-pdf baixar-pdf; do $SB functions deploy "$f" --use-api; done
 ok "Funções publicadas"
 
 cyan "== 6/6 · Agendando os lembretes (a cada hora) =="

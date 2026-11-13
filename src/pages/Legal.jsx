@@ -6,6 +6,7 @@ const CNPJ = import.meta.env.VITE_CNPJ || '[preencher CNPJ]'
 const EMAIL = import.meta.env.VITE_EMAIL_CONTATO || '[preencher e-mail de contato]'
 const CIDADE = import.meta.env.VITE_CIDADE || '[preencher cidade/UF]'
 const PRECO = import.meta.env.VITE_PRECO || 'R$ 19,90'
+const PRECO_PDF = import.meta.env.VITE_PRECO_PDF || 'R$ 8,99'
 const DIAS = import.meta.env.VITE_DIAS_TESTE || '7'
 const ATUALIZADO = '5 de novembro de 2026'
 
@@ -33,11 +34,19 @@ export function Termos() {
       <p>Você precisa ter 18 anos ou mais, ou autorização de quem responde por você, e informar um e-mail válido. Guarde sua senha com cuidado: o que for feito na sua conta é de sua responsabilidade.</p>
       <h2>3. Teste grátis e assinatura</h2>
       <ul>
-        <li>Toda conta nova tem <b>{DIAS} dias grátis</b>, sem cadastro de cartão.</li>
-        <li>Depois do teste, o acesso continua com a assinatura mensal de <b>{PRECO}</b>, cobrada no cartão pela plataforma de pagamento e renovada automaticamente todo mês.</li>
+        <li>Para começar, você cadastra um cartão de crédito no ambiente da plataforma de pagamento (Asaas) e ganha <b>{DIAS} dias grátis</b>. Nada é cobrado no cadastro.</li>
+        <li>Se você não cancelar até o fim do teste, a assinatura mensal de <b>{PRECO}</b> é cobrada no cartão no {Number(DIAS) + 1}º dia e renovada automaticamente todo mês.</li>
+        <li>O teste grátis vale uma vez por pessoa.</li>
         <li>Você pode <b>cancelar quando quiser</b>, em Perfil › Assinatura. O acesso continua até o fim do período já pago e não há multa nem fidelidade.</li>
         <li><b>Direito de arrependimento:</b> por ser uma contratação pela internet, você pode desistir em até 7 dias da primeira cobrança e receber o valor de volta (art. 49 do Código de Defesa do Consumidor). Basta pedir pelo e-mail {EMAIL}.</li>
         <li>Se o preço mudar, avisamos por e-mail com pelo menos 30 dias de antecedência. A mudança vale a partir da renovação seguinte.</li>
+      </ul>
+      <h3>Compra do PDF</h3>
+      <ul>
+        <li>O Planner do Criador em PDF é vendido separadamente por <b>{PRECO_PDF}</b>, em pagamento único (PIX ou cartão, pelo Asaas), sem assinatura.</li>
+        <li>O link para baixar é enviado ao e-mail informado na compra, assim que o pagamento é confirmado.</li>
+        <li>O PDF é para uso pessoal. Não é permitido revender, compartilhar ou distribuir o arquivo.</li>
+        <li><b>Direito de arrependimento:</b> você pode desistir em até 7 dias da compra e receber o valor de volta (art. 49 do CDC), pedindo pelo e-mail {EMAIL}.</li>
       </ul>
       <h2>4. Sem assinatura ativa</h2>
       <p>Quando o teste ou a assinatura termina, você continua podendo entrar e ver o que escreveu, mas não consegue editar até assinar de novo. Seus dados não são apagados por isso.</p>
@@ -67,13 +76,14 @@ export function Privacidade() {
         <li><b>Conteúdo do planner:</b> tudo o que você escreve no app, como metas, roteiros, contratos e valores.</li>
         <li><b>Assinatura:</b> status do plano e identificadores da plataforma de pagamento. Os dados do cartão ficam só com a plataforma de pagamento; nós não temos acesso a eles.</li>
         <li><b>Lembretes:</b> se você ativar, guardamos o endereço técnico de notificação do seu aparelho, o horário e o fuso escolhidos.</li>
-        <li><b>Material gratuito:</b> se baixar o PDF grátis, guardamos nome e e-mail.</li>
+        <li><b>Compra do PDF:</b> nome, e-mail e CPF (o CPF é exigido pela plataforma de pagamento para emitir a cobrança).</li>
+        <li><b>Lista de espera:</b> se entrar na lista, guardamos nome e e-mail.</li>
         <li><b>Navegação:</b> se você aceitar os cookies de medição, o Google Analytics e o Pixel da Meta registram páginas visitadas e ações como cadastro e início de assinatura.</li>
       </ul>
       <h2>2. Para que usamos e com qual base legal</h2>
       <ul>
-        <li>Criar sua conta, guardar e sincronizar seu planner e cobrar a assinatura: <b>execução de contrato</b> (art. 7º, V).</li>
-        <li>Lembretes, envio do PDF gratuito e e-mails sobre o planner, e cookies de medição e anúncios: <b>consentimento</b> (art. 7º, I), que você pode retirar quando quiser.</li>
+        <li>Criar sua conta, guardar e sincronizar seu planner, cobrar a assinatura e entregar o PDF comprado: <b>execução de contrato</b> (art. 7º, V).</li>
+        <li>Lembretes, lista de espera e e-mails sobre o planner, e cookies de medição e anúncios: <b>consentimento</b> (art. 7º, I), que você pode retirar quando quiser.</li>
         <li>Segurança, prevenção de fraudes e melhoria do serviço: <b>legítimo interesse</b> (art. 7º, IX).</li>
         <li>Guardar registros exigidos por lei, como os de acesso e os fiscais: <b>obrigação legal</b> (art. 7º, II).</li>
       </ul>
@@ -81,7 +91,7 @@ export function Privacidade() {
       <p>Não vendemos seus dados. Usamos fornecedores que tratam dados em nosso nome:</p>
       <ul>
         <li><b>Supabase</b> (banco de dados e login) e <b>Netlify</b> (hospedagem do site), com servidores que podem ficar fora do Brasil;</li>
-        <li><b>Stripe</b> (pagamentos);</li>
+        <li><b>Asaas</b> (pagamentos; os dados do cartão ficam só com o Asaas);</li>
         <li><b>Provedor de e-mail</b> (envio de confirmação de conta e recuperação de senha);</li>
         <li><b>Google</b> e <b>Meta</b>, somente se você aceitar os cookies de medição.</li>
       </ul>

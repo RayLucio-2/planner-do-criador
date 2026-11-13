@@ -524,3 +524,14 @@ html{color-scheme:light}
 .bonus p{font-size:14px;color:var(--ink2)}
 .isca{scroll-margin-top:70px}
 .in.codigo{text-align:center;font-family:var(--disp);font-weight:800;font-size:28px;letter-spacing:.35em;padding:14px}
+.assinar{display:flex;flex-direction:column;gap:10px;width:100%}
+.assinar .mut.sm{line-height:1.5}
+.cancelar{display:flex;flex-direction:column;gap:8px}
+/* preço com promoção e venda do PDF */
+.pv{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.pv-de{color:var(--mut);font-size:20px;font-weight:600;width:100%}
+.pv-promo{font-style:normal;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#1B1520;border-radius:999px;padding:5px 11px;align-self:center}
+.lp-cta s{color:var(--mut)}
+.pdf-l{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.pdf-l li{display:flex;gap:9px;align-items:center;font-size:14.5px}
+.pdf-l li svg{color:#fff;background:#10B981;border-radius:50%;padding:2px;flex:none}

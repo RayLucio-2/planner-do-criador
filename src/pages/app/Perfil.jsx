@@ -1,19 +1,67 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Ic, Head, Card, Entry, A, T, N, Field } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
-import { DEMO, CHECKOUT_URL, PORTAL_URL, PRECO, DIAS_TESTE, supabase } from '../../lib/supabase'
+import { DEMO, PRECO, DIAS_TESTE, supabase } from '../../lib/supabase'
 import { Link } from 'react-router-dom'
 import Lembretes from '../../components/Lembretes'
 import { track } from '../../lib/analytics'
 import { exportAll, importAll, clearLocal } from '../../lib/store'
 import { IG_URL } from '../../data/content'
+import Preco from '../../components/Preco'
 
-export function checkoutLink(user) {
-  if (!CHECKOUT_URL) return ''
-  const u = new URL(CHECKOUT_URL)
-  if (user?.id) u.searchParams.set('client_reference_id', user.id)
-  if (user?.email) u.searchParams.set('prefilled_email', user.email)
-  return u.toString()
+const dataBR = (d) => d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+const MARCA = 'pdc:checkout'
+const marcar = () => { try { localStorage.setItem(MARCA, String(Date.now())) } catch (e) { /* ok */ } }
+const voltouDoCheckout = () => { try { return Date.now() - Number(localStorage.getItem(MARCA) || 0) < 45 * 60 * 1000 } catch (e) { return false } }
+const limparMarca = () => { try { localStorage.removeItem(MARCA) } catch (e) { /* ok */ } }
+
+// Formulário que abre a página de cartão do Asaas
+export function Assinar({ teste = true, botao }) {
+  const auth = useAuth()
+  const [nome, setNome] = useState(''); const [cpf, setCpf] = useState(''); const [cel, setCel] = useState('')
+  const [busy, setBusy] = useState(false); const [erro, setErro] = useState('')
+  const mascCpf = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  const mascCel = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2')
+  async function ir(e) {
+    e.preventDefault(); setBusy(true); setErro('')
+    const { data, error } = await supabase.functions.invoke('asaas-checkout', { body: { nome, cpf, celular: cel } })
+    if (error || !data?.url) {
+      let m = data?.erro
+      try { m = m || (await error?.context?.json())?.erro } catch (x) { /* ok */ }
+      setBusy(false); setErro(m || 'Não consegui abrir o pagamento agora. Tente de novo em instantes.'); return
+    }
+    track('checkout'); marcar(); location.href = data.url
+  }
+  const d8 = new Date(Date.now() + 7 * 864e5).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  return (
+    <form className="assinar" onSubmit={ir}>
+      <input className="in big" placeholder="Nome completo (como no cartão)" value={nome} onChange={(e) => setNome(e.target.value)} required autoComplete="name" />
+      <input className="in big" placeholder="CPF" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
+      <input className="in big" placeholder="Celular com DDD (opcional)" inputMode="tel" value={cel} onChange={(e) => setCel(mascCel(e.target.value))} autoComplete="tel" />
+      <button className="btn big full" disabled={busy}>{busy ? 'Abrindo o pagamento…' : botao || (teste ? `Começar meus ${DIAS_TESTE} dias grátis` : `Assinar por ${PRECO}/mês`)}</button>
+      {erro && <p className="note err">{erro}</p>}
+      <p className="mut sm">{teste ? <>Na próxima tela você cadastra o cartão no ambiente seguro do Asaas. <b>Nada é cobrado agora:</b> a 1ª cobrança de {PRECO} acontece em {d8}. Cancele antes, em Perfil › Assinatura, e não paga nada.</> : <>Na próxima tela você cadastra o cartão no ambiente seguro do Asaas. A cobrança de {PRECO} é mensal e você cancela quando quiser.</>}</p>
+    </form>
+  )
+}
+
+function Cancelar() {
+  const auth = useAuth(); const [abrir, setAbrir] = useState(false); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('')
+  async function cancelar() {
+    setBusy(true); setMsg('')
+    const { data, error } = await supabase.functions.invoke('asaas-cancelar', { method: 'POST' })
+    setBusy(false)
+    if (error || data?.erro) { setMsg(data?.erro || 'Não consegui cancelar agora. Tente de novo em instantes.'); return }
+    setAbrir(false); auth.refreshSub()
+  }
+  if (!abrir) return <button className="btn ghost full danger" onClick={() => setAbrir(true)}>Cancelar assinatura</button>
+  return (
+    <div className="cancelar">
+      <p className="sm">Tem certeza? Você continua usando até o fim do período já liberado e não será cobrada de novo.</p>
+      <div className="g2 tight"><button className="btn ghost" onClick={() => setAbrir(false)}>Voltar</button><button className="btn danger-f" disabled={busy} onClick={cancelar}>{busy ? 'Cancelando…' : 'Sim, cancelar'}</button></div>
+      {msg && <p className="note err">{msg}</p>}
+    </div>
+  )
 }
 
 export default function Perfil() {
@@ -27,7 +75,13 @@ export default function Perfil() {
     const f = e.target.files[0]; if (!f) return
     f.text().then((t) => { try { importAll(JSON.parse(t)); setMsg('Backup importado!') } catch { setMsg('Arquivo inválido.') } })
   }
-  const statusTxt = DEMO ? 'Modo demonstração' : sub?.status === 'active' ? 'Assinatura ativa' : sub?.status === 'trialing' ? `Teste grátis: ${trialDays} ${trialDays === 1 ? 'dia restante' : 'dias restantes'}` : sub?.status === 'canceled' ? 'Assinatura cancelada' : 'Sem assinatura ativa'
+  const st = sub?.status
+  const statusTxt = DEMO ? 'Modo demonstração'
+    : st === 'active' ? `Assinatura ativa${sub.current_period_end ? ` · renova em ${dataBR(new Date(new Date(sub.current_period_end).getTime() - 864e5))}` : ''}`
+    : st === 'trialing' ? `Teste grátis: ${trialDays} ${trialDays === 1 ? 'dia restante' : 'dias restantes'}${sub.trial_end ? ` · 1ª cobrança em ${dataBR(sub.trial_end)}` : ''}`
+    : st === 'canceled' ? (access ? `Cancelada · você usa até ${dataBR(sub.current_period_end)}` : 'Assinatura cancelada')
+    : st === 'past_due' ? 'Pagamento não aprovado' : 'Sem assinatura ativa'
+  const podeCancelar = !DEMO && sub?.provider === 'asaas' && (st === 'active' || st === 'trialing' || st === 'past_due')
   return (
     <Entry k="capa"><div className="page">
       <Head icon="user" title="Perfil" sub="Este planner é de…" color="var(--pink)" />
@@ -36,9 +90,9 @@ export default function Perfil() {
 
       <Card title="Assinatura" icon="spark" color="var(--violet)">
         <div className={'subst ' + (access ? 'ok' : 'no')}>{statusTxt}</div>
-        {!DEMO && sub?.status !== 'active' && (CHECKOUT_URL ? <a className="btn full" href={checkoutLink(user)} onClick={() => track('checkout')}>Assinar por {PRECO}/mês</a> : <p className="mut sm">Link de pagamento ainda não configurado (VITE_CHECKOUT_URL).</p>)}
-        {!DEMO && sub?.status === 'active' && PORTAL_URL && <a className="btn ghost full" href={PORTAL_URL} target="_blank" rel="noreferrer">Gerenciar ou cancelar assinatura</a>}
-        {!DEMO && <button className="link sm" onClick={auth.refreshSub}>Já paguei, atualizar status</button>}
+        {podeCancelar && <Cancelar />}
+        {!DEMO && (st === 'canceled' || st === 'past_due') && <Assinar teste={false} botao={st === 'past_due' ? 'Atualizar cartão e assinar' : undefined} />}
+        {!DEMO && <button className="link sm" onClick={auth.refreshSub}>Atualizar status</button>}
       </Card>
 
       <Card title="Lembretes" icon="spark" color="var(--pink)"><Lembretes /></Card>
@@ -101,17 +155,33 @@ function InstallBtn() {
 }
 
 export function Paywall() {
-  const auth = useAuth(); const link = checkoutLink(auth.user)
+  const auth = useAuth(); const st = auth.sub?.status
+  const [esperando, setEsperando] = useState(voltouDoCheckout())
+  // voltou da página de cartão: espera o aviso do Asaas chegar (normalmente leva segundos)
+  useEffect(() => {
+    if (!esperando) return
+    let n = 0
+    const t = setInterval(() => { n++; auth.refreshSub(); if (n >= 20) { clearInterval(t); setEsperando(false); limparMarca() } }, 3000)
+    return () => clearInterval(t)
+  }, [esperando])
+  useEffect(() => { if (auth.access) limparMarca() }, [auth.access])
+  const novo = !st || st === 'pendente' || st === 'none' || st === 'trialing'
   return (
     <div className="page paywall">
-      <div className="ring big"><div><Ic n="lock" s={30} /></div></div>
-      <h1>Seu teste grátis terminou</h1>
-      <p className="mut">Seus dados continuam guardados. Assine para continuar planejando, gravando e analisando o seu ano.</p>
-      <div className="price"><div className="pv"><b>{PRECO}</b><span>/mês</span></div>
-        <ul>{['Planner completo, ano após ano', 'Roteiros e ideias ilimitados', 'Somas e retrospectiva automáticas', 'Sincroniza celular e computador'].map((x) => <li key={x}><Ic n="check" s={15} w={3} />{x}</li>)}</ul>
-        {link ? <a className="btn big full" href={link} onClick={() => track('checkout')}>Assinar agora</a> : <p className="mut sm">Link de pagamento ainda não configurado.</p>}
-        <button className="link sm" onClick={auth.refreshSub}>Já paguei, atualizar</button>
-      </div>
+      <div className="ring big"><div><Ic n={esperando ? 'cloud' : novo ? 'spark' : 'lock'} s={30} /></div></div>
+      {esperando ? <>
+        <h1>Confirmando seu cartão…</h1>
+        <p className="mut">Assim que o Asaas confirmar, o planner abre sozinho. Leva poucos segundos.</p>
+        <button className="link sm" onClick={() => { setEsperando(false); limparMarca() }}>Voltar para o formulário</button>
+      </> : <>
+        <h1>{novo ? `Comece seus ${DIAS_TESTE} dias grátis` : st === 'past_due' ? 'Pagamento não aprovado' : 'Sua assinatura terminou'}</h1>
+        <p className="mut">{novo ? 'Cadastre o cartão para liberar o planner completo. Você só paga se continuar depois do teste.' : st === 'past_due' ? 'Não conseguimos cobrar no seu cartão. Cadastre um cartão válido para continuar. Seus dados estão guardados.' : 'Seus dados continuam guardados. Assine de novo para voltar a planejar, gravar e analisar o seu ano.'}</p>
+        <div className="price">
+          <Preco sufixo={novo ? `/mês depois de ${DIAS_TESTE} dias grátis` : '/mês'} />
+          <ul>{['Planner completo, ano após ano', 'Roteiros e ideias ilimitados', 'Somas e retrospectiva automáticas', 'Sincroniza celular e computador', 'Cancele quando quiser, sem multa'].map((x) => <li key={x}><Ic n="check" s={15} w={3} />{x}</li>)}</ul>
+          <Assinar teste={novo} />
+        </div>
+      </>}
       <button className="link" onClick={auth.signOut}>Sair</button>
     </div>
   )

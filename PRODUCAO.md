@@ -1,6 +1,6 @@
 # Colocar o Planner do Criador no ar
 
-Siga na ordem. Tempo total: cerca de 1h30. Você vai precisar de contas no **GitHub**, **Supabase**, **Netlify**, **Stripe** e **Resend** (todas têm plano gratuito para começar).
+Siga na ordem. Tempo total: cerca de 1h30. Você vai precisar de contas no **GitHub**, **Supabase**, **Netlify** e **Asaas** (todas têm plano gratuito para começar).
 
 No computador, instale o **Node.js 20** (nodejs.org) e o **Git** (git-scm.com). No Windows, use o **Git Bash** para os comandos.
 
@@ -47,7 +47,7 @@ O script faz tudo sozinho:
 - publica as 3 funções;
 - agenda os lembretes de hora em hora.
 
-Pode deixar as chaves do Stripe em branco por enquanto. No fim, ele mostra os valores que vão para o Netlify. **Copie e guarde.**
+Nas perguntas do Stripe, só aperte Enter (o pagamento agora é pelo Asaas). No fim, ele mostra os valores que vão para o Netlify. **Copie e guarde.**
 
 3. No painel do Supabase:
    - **Authentication › Providers › Email**: *Confirm email* ligado.
@@ -63,22 +63,39 @@ Pode deixar as chaves do Stripe em branco por enquanto. No fim, ele mostra os va
 
 Sem domínio próprio ainda? Pule este passo para testar, mas não lance sem ele: o e-mail padrão do Supabase envia poucas mensagens por hora.
 
-## 4. Stripe (assinatura)
+## 4. Asaas (assinatura com cartão e 7 dias grátis)
 
-1. **Produtos › Adicionar produto**: “Planner do Criador”, preço **recorrente mensal** em BRL.
-2. **Payment Links › Criar**, com esse preço. Em *Após o pagamento*, escolha redirecionar para `https://SEU-SITE/#/app`. Copie o link.
-3. **Configurações › Billing › Portal do cliente**: ative e copie o link de login do portal.
-4. **Desenvolvedores › Webhooks › Adicionar endpoint**:
-   - URL: `https://tjwnnzrymxmayzvmiiwe.supabase.co/functions/v1/assinatura-webhook`
-   - Eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-   - Copie o **Signing secret** (`whsec_...`).
-5. Rode o script de novo e, desta vez, informe a **Secret key** e o **whsec_**:
+Como funciona: a pessoa cria a conta, cadastra o cartão na página segura do Asaas e usa 7 dias grátis. A 1ª cobrança é no 8º dia. Se ela cancelar antes (Perfil › Assinatura), não paga nada. Os dados do cartão nunca passam pelo site.
+
+1. **Chave de API:** Asaas › Integrações › Chaves de API › gerar. Começa com `$aact_`.
+2. **Webhook:** Asaas › Integrações › Webhooks › novo:
+   - URL: `https://tjwnnzrymxmayzvmiiwe.supabase.co/functions/v1/asaas-webhook`
+   - Token de autenticação: invente uma senha longa e guarde
+   - Fila de sincronização: ativada · Versão da API: v3
+   - Eventos: `CHECKOUT_PAID`, `SUBSCRIPTION_CREATED`, `SUBSCRIPTION_UPDATED`, `SUBSCRIPTION_INACTIVATED`, `SUBSCRIPTION_DELETED`, `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `PAYMENT_CREDIT_CARD_CAPTURE_REFUSED`, `PAYMENT_REFUNDED`
+3. **Chave PIX:** Asaas › Pix › cadastre uma chave (sem ela o PDF não aceita PIX).
+4. **Site da conta:** Asaas › Minha conta › Informações: coloque `https://plannerdocriador.netlify.app` no campo do site. O Asaas só volta para o endereço cadastrado.
+5. **Segredos no Supabase** (o PowerShell pergunta a chave e o token, sem você editar o comando):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\subir-producao.ps1
+$k = Read-Host 'Cole a chave do Asaas'
+$t = Read-Host 'Cole o token do webhook'
+npx --yes supabase@3.0.0 secrets set "ASAAS_API_KEY=$k" "ASAAS_WEBHOOK_TOKEN=$t" ASAAS_VALOR=19.90 ASAAS_VALOR_PDF=8.99 SITE_URL=https://plannerdocriador.netlify.app
 ```
 
-Comece com as chaves de **teste** do Stripe (`sk_test_...`), faça uma compra com o cartão `4242 4242 4242 4242` e, quando tudo funcionar, troque pelas chaves de produção.
+6. **Testar no sandbox** (sandbox.asaas.com, conta separada): use a chave e o webhook do sandbox e acrescente no comando `ASAAS_API_URL=https://api-sandbox.asaas.com/v3 ASAAS_CHECKOUT_URL=https://sandbox.asaas.com`. Para ir para produção, rode o comando acima com a chave real e depois `npx --yes supabase@3.0.0 secrets unset ASAAS_API_URL ASAAS_CHECKOUT_URL`.
+
+### Venda do PDF (R$ 8,99)
+
+1. Supabase › **Storage › produtos** › *Upload file*: envie o PDF completo com o nome `planner-do-criador-2027.pdf`. A pasta é privada: só quem pagou recebe um link temporário.
+2. A pessoa preenche nome, e-mail e CPF na página inicial, paga no Asaas (PIX ou cartão) e volta para a página de obrigado com o botão de download. O link também chega por e-mail.
+3. As compras ficam em Table Editor › `compras_pdf` (status `pendente`, `pago` ou `estornado`).
+
+### Preços e Black Friday
+
+- Exibidos no site: `netlify.toml` (`VITE_PRECO`, `VITE_PRECO_DE`, `VITE_PROMO`, `VITE_PRECO_PDF`).
+- Cobrados: segredos `ASAAS_VALOR` e `ASAAS_VALOR_PDF`. Mantenha os dois lados iguais.
+- **Fim da Black Friday:** no `netlify.toml`, mude `VITE_PRECO` para `R$ 29,90` e apague as linhas `VITE_PRECO_DE` e `VITE_PROMO`; depois rode `npx --yes supabase@3.0.0 secrets set ASAAS_VALOR=29.90`. Quem assinou na promoção continua com o valor que assinou.
 
 ## 5. Netlify (site)
 
@@ -88,9 +105,6 @@ Comece com as chaves de **teste** do Stripe (`sk_test_...`), faça uma compra co
 | Variável | Valor |
 |---|---|
 | `VITE_VAPID_PUBLIC_KEY` | mostrado pelo script |
-| `VITE_CHECKOUT_URL` | Payment Link do Stripe |
-| `VITE_PORTAL_URL` | link do portal do cliente |
-| `VITE_PRECO` | ex.: `R$ 19,90` |
 | `VITE_DIAS_TESTE` | `7` |
 | `VITE_EMPRESA` | `Télora Produtora` |
 | `VITE_CNPJ` | CNPJ |
@@ -117,7 +131,7 @@ O arquivo `.github/workflows/producao.yml` já está pronto: ele testa se o site
 
 ## 7. Antes do lançamento: lista de espera
 
-Enquanto `VITE_LANCADO` não for `true`, a página inicial é uma **lista de espera**: sem preço, sem botão de cadastro, com o formulário que guarda o e-mail (origem `lista-espera` na tabela `leads`) e libera a amostra em PDF.
+Enquanto `VITE_LANCADO` não for `true`, a página inicial é uma **lista de espera**: sem preço, sem botão de cadastro, com o formulário que guarda o e-mail (origem `lista-espera` na tabela `leads`) (a venda do PDF continua aparecendo).
 
 - Deixe também desligado no Supabase › **Authentication › Sign In / Providers › Allow new users to sign up**, para ninguém criar conta antes da hora. Crie as contas da equipe em **Authentication › Users › Add user**.
 - A tela `/#/entrar` continua funcionando para a equipe entrar e testar.
@@ -129,9 +143,10 @@ Enquanto `VITE_LANCADO` não for `true`, a página inicial é uma **lista de esp
 - [ ] Criar conta nova → chega o e-mail de confirmação → entra no passo a passo de boas-vindas
 - [ ] Preencher algo no celular e ver aparecer no computador
 - [ ] Ativar lembretes e receber uma notificação (mude o horário para a próxima hora cheia)
-- [ ] Assinar com o cartão de teste → status muda para “Assinatura ativa”
-- [ ] Cancelar pelo portal → status muda no fim do período
-- [ ] Baixar a amostra grátis → o e-mail aparece em Table Editor › `leads`
+- [ ] Conta nova → tela “Comece seus 7 dias grátis” → cartão no Asaas (sandbox) → volta e libera o planner
+- [ ] Perfil › Assinatura mostra “Teste grátis” e a data da 1ª cobrança
+- [ ] Cancelar assinatura → continua usando até o fim do teste e não é cobrada
+- [ ] Comprar o PDF (sandbox, PIX ou cartão) → página de obrigado baixa o PDF e o e-mail chega
 - [ ] Excluir uma conta de teste → some de Authentication › Users
 - [ ] Abrir o site no celular e instalar na tela inicial
 

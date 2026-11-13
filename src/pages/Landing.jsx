@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ic } from '../components/ui'
 import { IG_URL } from '../data/content'
-import { PRECO, DIAS_TESTE, supabase, DEMO } from '../lib/supabase'
+import { PRECO, PRECO_DE, PROMO, PRECO_PDF, DIAS_TESTE, supabase, DEMO } from '../lib/supabase'
+import Preco from '../components/Preco'
 import { track } from '../lib/analytics'
 import pInicio from '../assets/prints/inicio.webp'
 import pEditorial from '../assets/prints/editorial.webp'
@@ -10,7 +11,6 @@ import pAnalise from '../assets/prints/analise.webp'
 import pNegocio from '../assets/prints/negocio.webp'
 import pAno from '../assets/prints/ano.webp'
 import pRoteiro from '../assets/prints/roteiro.webp'
-const ISCA = './planner-do-criador-amostra-gratis.pdf'
 const ARTIFACT = import.meta.env.VITE_ROUTER === 'memory'
 // Enquanto não lançar, a página funciona como lista de espera. No lançamento: VITE_LANCADO=true
 export const LANCADO = import.meta.env.VITE_LANCADO === 'true'
@@ -37,15 +37,17 @@ const FAQ_ESPERA = [
   ['Quanto vai custar?', 'O valor vai ser anunciado primeiro para quem está na lista de espera.'],
   ['Preciso instalar alguma coisa?', 'Não. O planner vai abrir no navegador e você poderá adicionar à tela inicial do celular (Android ou iPhone) para usar como app, inclusive sem internet.'],
   ['Serve para quem está começando?', 'Foi feito para isso. O guia mostra como começar só com o celular e o planner ajuda a registrar e melhorar mês a mês.'],
-  ['O que vem na amostra grátis?', 'O guia completo com as 6 lições, os primeiros 90 dias e o mês de janeiro inteiro, em PDF interativo para preencher no celular ou imprimir.'],
+  ['Tem a versão em PDF?', `Tem! O Planner do Criador 2027 completo em PDF interativo custa ${PRECO_PDF}, pagamento único no PIX ou no cartão, e chega no seu e-mail.`],
   ['E quando 2027 acabar?', 'O planner continua: você troca o ano no topo do app e começa um ano novo, com feriados e datas atualizados, sem perder o histórico.'],
 ]
 const FAQ = [
   ['Preciso instalar alguma coisa?', 'Não. O planner abre no navegador e você pode adicionar à tela inicial do celular (Android ou iPhone) para usar como app, inclusive sem internet.'],
   ['Meus dados ficam salvos?', 'Sim. Tudo é salvo na sua conta e sincroniza entre celular, tablet e computador.'],
-  ['Posso cancelar quando quiser?', 'Pode. A assinatura é mensal, sem fidelidade. Você cancela em Perfil > Assinatura.'],
+  ['Preciso cadastrar cartão para testar?', 'Sim. Você cadastra o cartão no ambiente seguro do Asaas e usa 7 dias grátis. A 1ª cobrança só acontece no 8º dia. Se cancelar antes, não paga nada.'],
+  ['Posso cancelar quando quiser?', 'Pode. A assinatura é mensal, sem fidelidade. Você cancela em Perfil › Assinatura e continua usando até o fim do período já pago.'],
   ['Serve para quem está começando?', 'Foi feito para isso. O guia mostra como começar só com o celular e o planner ajuda a registrar e melhorar mês a mês.'],
-  ['Tem a versão em PDF?', 'Tem uma amostra grátis em PDF (o guia completo e o mês de janeiro). O app é a versão completa, com somas automáticas, roteiros ilimitados e lembretes.'],
+  ['Tem a versão em PDF?', `Tem! O PDF interativo completo custa ${PRECO_PDF}, pagamento único no PIX ou no cartão, e chega no seu e-mail. O app tem tudo isso e mais: somas automáticas, roteiros ilimitados, lembretes e sincronização.`],
+  ['Qual a diferença entre o PDF e o app?', 'O PDF você preenche no Acrobat ou imprime. O app salva na sua conta, sincroniza celular e computador, faz as contas sozinho e continua nos próximos anos.'],
   ['Posso começar antes de 2027?', 'Pode. Novembro e dezembro de 2026 já estão no app como bônus, para você testar a rotina e chegar em janeiro com tudo planejado.'],
   ['E quando 2027 acabar?', 'O planner continua: você troca o ano no topo do app e começa um ano novo, com feriados e datas atualizados, sem perder o histórico.'],
 ]
@@ -67,7 +69,7 @@ function LandingEspera() {
           <span className="pill">em breve</span>
           <h1>Planner<br /><em>do criador</em> <span className="yr">2027</span></h1>
           <p>O app para quem quer produzir conteúdo e fechar contratos começando com o que já tem: calendário editorial, roteiros, análise do mês e negócio, com cara de rede social.</p>
-          <div className="lp-cta"><button className="btn big" onClick={() => irPara('lista')}>Me avise no lançamento <Ic n="right" s={16} w={2.6} /></button><span className="mut">e já levo a amostra grátis em PDF</span></div>
+          <div className="lp-cta"><button className="btn big" onClick={() => irPara('lista')}>Me avise no lançamento <Ic n="right" s={16} w={2.6} /></button><span className="mut">quem está na lista sabe primeiro</span></div>
         </div>
         <Celular />
       </section>
@@ -84,6 +86,7 @@ function LandingEspera() {
       <Recursos />
       <Historia />
       <Isca espera />
+      <ComprarPdf />
 
       <section className="lp-sec">
         <h2>Perguntas frequentes</h2>
@@ -166,10 +169,10 @@ function LandingVendas() {
 
       <section className="lp-hero">
         <div className="lp-hero-t">
-          <span className="pill">{DIAS_TESTE} dias grátis · cancele quando quiser</span>
+          <span className="pill">{PROMO ? `${PROMO} · ${DIAS_TESTE} dias grátis` : `${DIAS_TESTE} dias grátis · cancele quando quiser`}</span>
           <h1>Planner<br /><em>do criador</em> <span className="yr">2027</span></h1>
           <p>O app para quem quer produzir conteúdo e fechar contratos começando com o que já tem: calendário editorial, roteiros, análise do mês e negócio, com cara de rede social.</p>
-          <div className="lp-cta"><Link to="/entrar?criar=1" className="btn big" onClick={() => track('teste')}>Testar grátis por {DIAS_TESTE} dias <Ic n="right" s={16} w={2.6} /></Link><span className="mut">depois {PRECO}/mês</span></div>
+          <div className="lp-cta"><Link to="/entrar?criar=1" className="btn big" onClick={() => track('teste')}>Testar grátis por {DIAS_TESTE} dias <Ic n="right" s={16} w={2.6} /></Link><span className="mut">depois {PRECO_DE && <s>{PRECO_DE}</s>} <b>{PRECO}</b>/mês</span></div>
         </div>
         <div className="lp-phone">
           <div className="phn">
@@ -194,7 +197,7 @@ function LandingVendas() {
 
       <section className="lp-sec">
         <h2>Como funciona</h2>
-        <div className="how">{[['Crie sua conta', `Leva 1 minuto e não pede cartão. São ${DIAS_TESTE} dias grátis.`], ['Responda 4 perguntas', 'Seu perfil, seu público e onde você está hoje. O planner se organiza a partir disso.'], ['Use todo dia', 'Planeje o post, grave, marque como postado e veja o mês fechar sozinho.']].map(([t, d], i) => (
+        <div className="how">{[['Crie sua conta', `Leva 1 minuto. Cadastre o cartão e use ${DIAS_TESTE} dias grátis; a 1ª cobrança é só no 8º dia.`], ['Responda 4 perguntas', 'Seu perfil, seu público e onde você está hoje. O planner se organiza a partir disso.'], ['Use todo dia', 'Planeje o post, grave, marque como postado e veja o mês fechar sozinho.']].map(([t, d], i) => (
           <div className="how-i" key={t}><span>{i + 1}</span><b>{t}</b><p>{d}</p></div>
         ))}</div>
       </section>
@@ -217,13 +220,13 @@ function LandingVendas() {
         </div>
       </section>
 
-      <Isca />
+      <ComprarPdf />
 
       <section className="lp-sec lp-price" id="preco">
         <div className="price">
           <span className="pill">assinatura mensal</span>
-          <div className="pv"><b>{PRECO}</b><span>/mês</span></div>
-          <ul>{['Planner completo, ano após ano', 'Roteiros e ideias ilimitados', 'Somas e retrospectiva automáticas', 'Sincroniza celular e computador', 'Funciona offline como app', `${DIAS_TESTE} dias grátis para testar`].map((x) => <li key={x}><Ic n="check" s={15} w={3} />{x}</li>)}</ul>
+          <Preco />
+          <ul>{['Planner completo, ano após ano', 'Roteiros e ideias ilimitados', 'Somas e retrospectiva automáticas', 'Sincroniza celular e computador', 'Funciona offline como app', `${DIAS_TESTE} dias grátis, cobrança só no 8º dia`].map((x) => <li key={x}><Ic n="check" s={15} w={3} />{x}</li>)}</ul>
           <Link to="/entrar?criar=1" className="btn big full">Começar meu teste grátis</Link>
           <span className="mut sm">Sem fidelidade. Cancele quando quiser.</span>
         </div>
@@ -239,53 +242,79 @@ function LandingVendas() {
   )
 }
 
-function Isca({ espera }) {
+function Isca() {
   const [nome, setNome] = useState(''); const [email, setEmail] = useState(''); const [ok, setOk] = useState(false)
   const [aceite, setAceite] = useState(false); const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false)
   async function enviar(e) {
     e.preventDefault(); setErro(''); setBusy(true)
     if (!DEMO) {
-      const { error } = await supabase.from('leads').insert({ nome, email, consentimento: true, origem: espera ? 'lista-espera' : 'isca-pdf' })
+      const { error } = await supabase.from('leads').insert({ nome, email, consentimento: true, origem: 'lista-espera' })
       if (error) { setBusy(false); setErro('Não consegui registrar agora. Confira o e-mail e tente de novo.'); return }
-      supabase.functions.invoke('enviar-amostra', { body: { email } }).catch(() => {})   // envia o link também por e-mail
     }
-    track('lead', { content_name: 'amostra-pdf' }); setOk(true); setBusy(false)
+    track('lead', { content_name: 'lista-espera' }); setOk(true); setBusy(false)
   }
   return (
-    <section className="lp-sec isca" id={espera ? 'lista' : 'gratis'}>
+    <section className="lp-sec isca" id="lista">
       <div className="isca-c">
-        {espera ? (
-          <div className="isca-t">
-            <span className="pill">lista de espera</span>
-            <h2>Saiba do lançamento antes de todo mundo</h2>
-            <p className="mut">Entre na lista e receba agora, de presente, a amostra do planner em PDF: as 6 lições do guia, os primeiros 90 dias e o mês de janeiro completo.</p>
-          </div>
-        ) : (
-          <div className="isca-t">
-            <span className="pill">grátis</span>
-            <h2>Baixe a amostra do planner em PDF</h2>
-            <p className="mut">As 6 lições do guia, os primeiros 90 dias e o mês de janeiro completo, interativo para preencher no celular ou imprimir.</p>
-          </div>
-        )}
+        <div className="isca-t">
+          <span className="pill">lista de espera</span>
+          <h2>Saiba do lançamento antes de todo mundo</h2>
+          <p className="mut">Entre na lista e receba o aviso do lançamento do app no seu e-mail, antes de todo mundo.</p>
+        </div>
         {!ok ? (
           <form className="isca-f" onSubmit={enviar}>
             <input className="in big" placeholder="Seu nome" value={nome} onChange={(e) => setNome(e.target.value)} required />
             <input className="in big" type="email" placeholder="Seu melhor e-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <label className={'ck aceite' + (aceite ? ' on' : '')}><input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} required /><span className="box"><Ic n="check" s={12} w={3} /></span><span className="ckl2">{espera ? 'Aceito receber o aviso de lançamento e outros e-mails do Planner do Criador. Posso cancelar quando quiser.' : 'Aceito receber e-mails do Planner do Criador. Posso cancelar quando quiser.'} <Link to="/privacidade">Privacidade</Link></span></label>
-            <button className="btn big full" disabled={busy || !aceite}>{busy ? 'Enviando…' : espera ? 'Entrar na lista e baixar a amostra' : 'Quero a amostra grátis'}</button>
+            <label className={'ck aceite' + (aceite ? ' on' : '')}><input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} required /><span className="box"><Ic n="check" s={12} w={3} /></span><span className="ckl2">Aceito receber o aviso de lançamento e outros e-mails do Planner do Criador. Posso cancelar quando quiser. <Link to="/privacidade">Privacidade</Link></span></label>
+            <button className="btn big full" disabled={busy || !aceite}>{busy ? 'Enviando…' : 'Entrar na lista'}</button>
             {erro && <p className="note err">{erro}</p>}
           </form>
         ) : (
           <div className="isca-f ok">
             <b>Pronto, {nome.split(' ')[0] || 'criadora'}!</b>
-            {espera && <p className="mut">Você está na lista. Assim que o app for lançado, avisamos no seu e-mail.</p>}
-            {!DEMO && <p className="mut sm">Também mandamos o link do PDF para {email}. Confira a caixa de spam se não chegar.</p>}
-            {ARTIFACT ? <p className="mut">No site publicado, o PDF baixa neste botão. Nesta demonstração o download fica desativado.</p>
-              : <a className="btn big full" href={ISCA} target="_blank" rel="noreferrer"><Ic n="download" s={18} /> Baixar o PDF</a>}
-            {espera ? <a className="link" href={IG_URL} target="_blank" rel="noreferrer">Acompanhe os bastidores no @aritamende.s</a>
-              : <Link to="/entrar?criar=1" className="link" onClick={() => track('teste')}>Ou teste o app completo por {DIAS_TESTE} dias</Link>}
+            <p className="mut">Você está na lista. Assim que o app for lançado, avisamos no seu e-mail.</p>
+            <a className="link" href={IG_URL} target="_blank" rel="noreferrer">Acompanhe os bastidores no @aritamende.s</a>
           </div>
         )}
+      </div>
+    </section>
+  )
+}
+
+// Venda do PDF completo: pagamento único no Asaas (PIX ou cartão), entregue por e-mail
+const mascCpf = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+function ComprarPdf() {
+  const [nome, setNome] = useState(''); const [email, setEmail] = useState(''); const [cpf, setCpf] = useState('')
+  const [aceite, setAceite] = useState(false); const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false)
+  async function comprar(e) {
+    e.preventDefault(); setErro('')
+    if (DEMO) { setErro('Na demonstração a compra fica desativada.'); return }
+    setBusy(true)
+    const { data, error } = await supabase.functions.invoke('comprar-pdf', { body: { nome, email, cpf } })
+    if (error || !data?.url) {
+      let m = data?.erro
+      try { m = m || (await error?.context?.json())?.erro } catch (x) { /* ok */ }
+      setBusy(false); setErro(m || 'Não consegui abrir o pagamento agora. Tente de novo em instantes.'); return
+    }
+    track('checkout', { content_name: 'pdf', value: 8.99, currency: 'BRL' }); location.href = data.url
+  }
+  return (
+    <section className="lp-sec isca" id="pdf">
+      <div className="isca-c">
+        <div className="isca-t">
+          <span className="pill">PDF completo · {PRECO_PDF}</span>
+          <h2>Prefere no papel? Leve o planner em PDF</h2>
+          <p className="mut">O Planner do Criador 2027 inteiro em PDF interativo: as 6 lições, os 12 meses com calendário editorial, roteiros, análise e negócio do mês. Preencha no celular ou imprima.</p>
+          <ul className="pdf-l">{['Pagamento único, sem assinatura', 'PIX ou cartão, no ambiente seguro do Asaas', 'Chega no seu e-mail assim que o pagamento é confirmado'].map((x) => <li key={x}><Ic n="check" s={14} w={3} />{x}</li>)}</ul>
+        </div>
+        <form className="isca-f" onSubmit={comprar}>
+          <input className="in big" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} required autoComplete="name" />
+          <input className="in big" type="email" placeholder="E-mail para receber o PDF" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+          <input className="in big" placeholder="CPF (pedido pelo Asaas)" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
+          <label className={'ck aceite' + (aceite ? ' on' : '')}><input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} required /><span className="box"><Ic n="check" s={12} w={3} /></span><span className="ckl2">Li e aceito os <Link to="/termos">Termos de uso</Link> e a <Link to="/privacidade">Política de privacidade</Link></span></label>
+          <button className="btn big full" disabled={busy || !aceite}>{busy ? 'Abrindo o pagamento…' : `Comprar o PDF por ${PRECO_PDF}`}</button>
+          {erro && <p className="note err">{erro}</p>}
+        </form>
       </div>
     </section>
   )

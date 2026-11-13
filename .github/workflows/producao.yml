@@ -45,3 +45,8 @@ jobs:
           supabase functions deploy excluir-conta --use-api
           supabase functions deploy lembretes --use-api
           supabase functions deploy enviar-amostra --use-api
+          supabase functions deploy asaas-webhook --use-api
+          supabase functions deploy asaas-checkout --use-api
+          supabase functions deploy asaas-cancelar --use-api
+          supabase functions deploy comprar-pdf --use-api
+          supabase functions deploy baixar-pdf --use-api

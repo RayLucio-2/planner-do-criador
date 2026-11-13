@@ -44,7 +44,7 @@ Rodar $args2
 Ok 'Segredos salvos no Supabase'
 
 Titulo '5/6 · Publicando as funções'
-foreach ($f in @('assinatura-webhook', 'excluir-conta', 'lembretes', 'enviar-amostra')) { Rodar @('functions', 'deploy', $f, '--use-api') }
+foreach ($f in @('assinatura-webhook', 'excluir-conta', 'lembretes', 'enviar-amostra', 'asaas-webhook', 'asaas-checkout', 'asaas-cancelar', 'comprar-pdf', 'baixar-pdf')) { Rodar @('functions', 'deploy', $f, '--use-api') }
 Ok 'Funções publicadas'
 
 Titulo '6/6 · Agendando os lembretes (a cada hora)'

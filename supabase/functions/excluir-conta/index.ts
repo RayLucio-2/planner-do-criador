@@ -13,6 +13,10 @@ Deno.serve(async (req) => {
 
   // 1) cancela a cobrança, se houver
   const { data: sub } = await admin.from('subscriptions').select('provider,provider_subscription_id').eq('user_id', user.id).maybeSingle()
+  if (sub?.provider === 'asaas' && sub.provider_subscription_id) {
+    const r = await fetch(`${Deno.env.get('ASAAS_API_URL') || 'https://api.asaas.com/v3'}/subscriptions/${sub.provider_subscription_id}`, { method: 'DELETE', headers: { access_token: Deno.env.get('ASAAS_API_KEY')!, 'User-Agent': 'planner-do-criador' } })
+    if (!r.ok && r.status !== 404) return new Response(JSON.stringify({ erro: 'Não consegui cancelar a assinatura. Tente de novo ou fale com o suporte.' }), { status: 502, headers: { ...cors, 'Content-Type': 'application/json' } })
+  }
   const sk = Deno.env.get('STRIPE_SECRET_KEY')
   if (sub?.provider === 'stripe' && sub.provider_subscription_id && sk) {
     const r = await fetch(`https://api.stripe.com/v1/subscriptions/${sub.provider_subscription_id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${sk}` } })

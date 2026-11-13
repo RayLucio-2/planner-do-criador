@@ -2,7 +2,7 @@
 
 Um único projeto que é ao mesmo tempo:
 
-- **Site de vendas** (`/`): telas reais do app, como funciona, recursos, amostra grátis em PDF (captura de e-mail), preço, perguntas frequentes, termos e privacidade.
+- **Site de vendas** (`/`): telas reais do app, como funciona, recursos, venda do PDF completo (R$ 8,99, Asaas), preço, perguntas frequentes, termos e privacidade.
 - **App do planner** (`/#/app`): calendário editorial, roteiros ilimitados, análise e negócio do mês com somas automáticas, guia, ferramentas, revisões e retrospectiva do ano.
 - **App instalável no celular** (PWA): Android e iPhone instalam pelo navegador, sem loja, e abre offline.
 
@@ -19,9 +19,9 @@ Sem configurar nada, ele roda em **modo demonstração** (dados só no aparelho)
 | **Primeiro acesso** | Passo a passo em 4 telas: perfil (nome, @, bio), público (para quem cria e a maior dor), notas de “Onde estou hoje” e lembretes. Dá para pular. |
 | **Lembretes** | Notificação no celular com o post planejado do dia (no horário que a pessoa escolher) e aviso para fazer a Análise no último dia do mês. No iPhone, só com o app instalado na tela inicial. |
 | **Termos e privacidade** | Páginas `/termos` e `/privacidade` (rascunho para você revisar), aceite obrigatório no cadastro (guardado com data) e **Excluir minha conta** no Perfil, que cancela a assinatura no Stripe e apaga tudo. |
-| **Página de vendas** | Prints reais do app (com dados de exemplo), “como funciona”, captura de e-mail para a amostra em PDF. |
-| **Medição** | Google Analytics 4 e Pixel da Meta, carregados só se a pessoa aceitar os cookies. Eventos: visita de página, lead (amostra), cadastro, início do teste e início do pagamento. |
-| **Isca** | `public/planner-do-criador-amostra-gratis.pdf`: capa, guia completo, 90 dias e janeiro inteiro, interativo, com uma página final levando para o app. |
+| **Página de vendas** | Prints reais do app (com dados de exemplo), “como funciona”, venda do PDF completo com entrega por e-mail. |
+| **Medição** | Google Analytics 4 e Pixel da Meta, carregados só se a pessoa aceitar os cookies. Eventos: visita de página, lead (lista de espera), cadastro, início do teste e início do pagamento. |
+| **PDF à venda** | Fica na pasta privada `produtos` do Storage do Supabase. Funções `comprar-pdf` (abre o pagamento) e `baixar-pdf` (link temporário só para quem pagou). |
 
 ## 1. Rodar no computador
 
@@ -95,7 +95,7 @@ O código já vem protegido (veja a lista abaixo). Estes ajustes são feitos por
 - **Authentication › Providers › Email**: deixe *Confirm email* ligado.
 - **Authentication › Policies** (ou *Password Security*): senha mínima de **8** caracteres e, se o plano permitir, ative *Leaked password protection* (bloqueia senhas que já vazaram).
 - **Authentication › Rate Limits**: confira os limites de cadastro e de envio de e-mail.
-- **Authentication › Attack Protection**: se começar a aparecer cadastro falso ou spam na amostra grátis, ative o CAPTCHA (Cloudflare Turnstile). Me avise que eu ligo no formulário.
+- **Authentication › Attack Protection**: se começar a aparecer cadastro falso ou spam na lista de espera, ative o CAPTCHA (Cloudflare Turnstile). Me avise que eu ligo no formulário.
 - **Project Settings › API**: nunca coloque a *service_role key* no `.env` do site. Ela só vai nos segredos das funções (`supabase secrets set`).
 - **Backups**: o plano Pro faz backup diário automático. No plano grátis, exporte o banco de vez em quando (Database › Backups).
 
@@ -103,7 +103,7 @@ O código já vem protegido (veja a lista abaixo). Estes ajustes são feitos por
 - Cada conta só lê e grava os próprios dados (regras RLS no banco, testadas).
 - Sem teste ou assinatura ativa, o banco recusa novas gravações, mesmo que alguém mexa no app.
 - Ninguém consegue alterar a própria assinatura: só o webhook do Stripe, com assinatura verificada.
-- Limites de tamanho nos dados e validação de e-mail na amostra grátis.
+- Limites de tamanho nos dados e validação de e-mail na lista de espera e na compra do PDF.
 - Ao sair, o app apaga a cópia dos dados guardada no aparelho.
 - Cabeçalhos de segurança no Netlify (`public/_headers`): HTTPS obrigatório, bloqueio de iframe e uma política (CSP) que só deixa rodar scripts do próprio site, do Google Analytics e da Meta.
 - Pixel e Analytics só carregam com o aceite dos cookies.
@@ -113,9 +113,8 @@ O código já vem protegido (veja a lista abaixo). Estes ajustes são feitos por
 1. Suba a pasta para um repositório no GitHub.
 2. Netlify › *Add new site › Import from Git*. O `netlify.toml` já tem o comando e a pasta.
 3. Cadastre as variáveis do `.env` em *Site configuration › Environment variables*.
-4. Deploy. Site, app e PDF da amostra ficam no mesmo endereço.
+4. Deploy. Site e app ficam no mesmo endereço.
 
-Depois de ter o endereço final, posso gerar de novo o PDF da amostra com o botão levando direto para o site (hoje ele leva para o Instagram @aritamende.s).
 
 ## Onde mexer
 

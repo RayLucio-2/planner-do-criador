@@ -87,7 +87,7 @@ export default function Entrar() {
             </div>
             {!CADASTRO && modo === 'entrar' && <p className="mut sm">O app ainda não foi lançado. Este acesso é só para a equipe. <Link to="/">Entre na lista de espera</Link>.</p>}
             {CADASTRO && modo === 'entrar' && <p className="mut sm">Ainda não tem conta? Toque em “Criar conta” e use {DIAS_TESTE} dias grátis.</p>}
-            {modo === 'criar' && <p className="mut sm">{DIAS_TESTE} dias grátis. Não pedimos cartão para testar.</p>}
+            {modo === 'criar' && <p className="mut sm">Depois de criar a conta, você ativa os {DIAS_TESTE} dias grátis com o cartão. A 1ª cobrança só acontece no 8º dia, e você pode cancelar antes.</p>}
             {modo === 'esqueci' && <p className="mut sm">Digite seu e-mail e enviaremos um código para criar uma nova senha.</p>}
             <form onSubmit={go}>
               {modo === 'criar' && <input className="in big" placeholder="Seu nome" value={nome} onChange={(e) => setNome(e.target.value)} required />}

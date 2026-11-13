@@ -15,6 +15,7 @@ import { Semestre, Fechamento, Fim, Ano, Ideias, Notas } from './pages/app/Revis
 import Perfil, { Paywall } from './pages/app/Perfil'
 import BoasVindas from './pages/app/BoasVindas'
 import Convite from './pages/Convite'
+import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
 import Cookies, { RotaMedida } from './components/Cookies'
 
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/boas-vindas" element={<Guard><BoasVindas /></Guard>} />
         <Route path="/entrar" element={<Entrar />} />
         <Route path="/convite" element={<Convite />} />
+        <Route path="/obrigada" element={<Obrigada />} />
         <Route path="/app" element={<Guard><Shell /></Guard>}>
           <Route index element={<Home />} />
           <Route path="carta" element={<Carta />} />
