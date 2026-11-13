@@ -2,7 +2,7 @@
 // Segredos: ASAAS_API_KEY, ASAAS_VALOR_PDF (ex.: 8.99), SITE_URL. Sandbox: ASAAS_API_URL e ASAAS_CHECKOUT_URL.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { cors } from '../_shared/cors.ts'
-import { asaas, erroAsaas, ASAAS_CHECKOUT } from '../_shared/asaas.ts'
+import { asaas, erroAsaas, ASAAS_CHECKOUT, dadosEndereco, celularValido } from '../_shared/asaas.ts'
 
 const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 function cpfValido(c: string) {
@@ -21,6 +21,11 @@ Deno.serve(async (req) => {
   if (nome.length < 3) return json({ erro: 'Informe seu nome completo.' }, 400)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254) return json({ erro: 'Confira o e-mail.' }, 400)
   if (!cpfValido(cpf)) return json({ erro: 'CPF inválido. Confira os números.' }, 400)
+  const celular = String(b.celular || '').replace(/\D/g, '')
+  if (!celularValido(celular)) return json({ erro: 'Informe o celular com DDD.' }, 400)
+  const end: any = await dadosEndereco(b.cep, b.numero)
+  if (end.erro) return json({ erro: end.erro }, 400)
+  const { cityName: _c, state: _s, ...endereco } = end
 
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
   // freio contra abuso: no máximo 5 tentativas por e-mail a cada 10 min e 200 por hora no total
@@ -30,7 +35,7 @@ Deno.serve(async (req) => {
   if ((porEmail ?? 0) >= 5 || (total ?? 0) >= 200) return json({ erro: 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.' }, 429)
 
   // 1) cliente no Asaas (um por compra, para não misturar com a assinatura do app)
-  const cli = await asaas('/customers', { method: 'POST', body: JSON.stringify({ name: nome, cpfCnpj: cpf, email, notificationDisabled: true }) })
+  const cli = await asaas('/customers', { method: 'POST', body: JSON.stringify({ name: nome, cpfCnpj: cpf, email, mobilePhone: celular, phone: celular, ...endereco, notificationDisabled: true }) })
   if (!cli.ok) return json({ erro: erroAsaas(cli.body) }, 400)
 
   const valor = Number(Deno.env.get('ASAAS_VALOR_PDF') || '8.99')

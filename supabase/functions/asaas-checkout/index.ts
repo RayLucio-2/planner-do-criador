@@ -2,7 +2,7 @@
 // Segredos: ASAAS_API_KEY, ASAAS_VALOR (ex.: 19.90), SITE_URL. Sandbox: ASAAS_API_URL e ASAAS_CHECKOUT_URL.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { cors } from '../_shared/cors.ts'
-import { asaas, erroAsaas, dataAsaas, ASAAS_CHECKOUT } from '../_shared/asaas.ts'
+import { asaas, erroAsaas, dataAsaas, ASAAS_CHECKOUT, dadosEndereco, celularValido } from '../_shared/asaas.ts'
 
 const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 const DIAS_TESTE = 7
@@ -27,6 +27,10 @@ Deno.serve(async (req) => {
   const celular = String(b.celular || '').replace(/\D/g, '')
   if (nome.length < 3) return json({ erro: 'Informe seu nome completo.' }, 400)
   if (!cpfValido(cpf)) return json({ erro: 'CPF inválido. Confira os números.' }, 400)
+  if (!celularValido(celular)) return json({ erro: 'Informe o celular com DDD.' }, 400)
+  const end: any = await dadosEndereco(b.cep, b.numero)
+  if (end.erro) return json({ erro: end.erro }, 400)
+  const { cityName: _c, state: _s, ...endereco } = end
 
   const { data: sub } = await db.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle()
   if (sub?.status === 'active' || (sub?.status === 'trialing' && sub?.trial_end && new Date(sub.trial_end) > new Date() && sub?.provider === 'asaas'))
@@ -35,11 +39,11 @@ Deno.serve(async (req) => {
   // 1) cliente no Asaas (reaproveita se já existir)
   let cliente = sub?.provider === 'asaas' ? sub?.provider_customer_id : null
   if (!cliente) {
-    const r = await asaas('/customers', { method: 'POST', body: JSON.stringify({ name: nome, cpfCnpj: cpf, email: user.email, mobilePhone: celular || undefined, externalReference: user.id }) })
+    const r = await asaas('/customers', { method: 'POST', body: JSON.stringify({ name: nome, cpfCnpj: cpf, email: user.email, mobilePhone: celular, phone: celular, ...endereco, externalReference: user.id }) })
     if (!r.ok) return json({ erro: erroAsaas(r.body) }, 400)
     cliente = r.body.id
   } else {
-    await asaas(`/customers/${cliente}`, { method: 'PUT', body: JSON.stringify({ name: nome, cpfCnpj: cpf, mobilePhone: celular || undefined }) })
+    await asaas(`/customers/${cliente}`, { method: 'PUT', body: JSON.stringify({ name: nome, cpfCnpj: cpf, mobilePhone: celular, phone: celular, ...endereco }) })
   }
 
   // 2) página de pagamento: cartão, mensal, 1ª cobrança em 7 dias

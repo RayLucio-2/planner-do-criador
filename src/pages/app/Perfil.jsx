@@ -18,13 +18,14 @@ const limparMarca = () => { try { localStorage.removeItem(MARCA) } catch (e) { /
 // Formulário que abre a página de cartão do Asaas
 export function Assinar({ teste = true, botao }) {
   const auth = useAuth()
-  const [nome, setNome] = useState(''); const [cpf, setCpf] = useState(''); const [cel, setCel] = useState('')
+  const [nome, setNome] = useState(''); const [cpf, setCpf] = useState(''); const [cel, setCel] = useState(''); const [cep, setCep] = useState(''); const [num, setNum] = useState('')
   const [busy, setBusy] = useState(false); const [erro, setErro] = useState('')
   const mascCpf = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  const mascCep = (v) => v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
   const mascCel = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2')
   async function ir(e) {
     e.preventDefault(); setBusy(true); setErro('')
-    const { data, error } = await supabase.functions.invoke('asaas-checkout', { body: { nome, cpf, celular: cel } })
+    const { data, error } = await supabase.functions.invoke('asaas-checkout', { body: { nome, cpf, celular: cel, cep, numero: num } })
     if (error || !data?.url) {
       let m = data?.erro
       try { m = m || (await error?.context?.json())?.erro } catch (x) { /* ok */ }
@@ -37,7 +38,8 @@ export function Assinar({ teste = true, botao }) {
     <form className="assinar" onSubmit={ir}>
       <input className="in big" placeholder="Nome completo (como no cartão)" value={nome} onChange={(e) => setNome(e.target.value)} required autoComplete="name" />
       <input className="in big" placeholder="CPF" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
-      <input className="in big" placeholder="Celular com DDD (opcional)" inputMode="tel" value={cel} onChange={(e) => setCel(mascCel(e.target.value))} autoComplete="tel" />
+      <input className="in big" placeholder="Celular com DDD" inputMode="tel" value={cel} onChange={(e) => setCel(mascCel(e.target.value))} required autoComplete="tel" />
+      <div className="g2 tight"><input className="in big" placeholder="CEP" inputMode="numeric" value={cep} onChange={(e) => setCep(mascCep(e.target.value))} required autoComplete="postal-code" /><input className="in big" placeholder="Número da casa" value={num} onChange={(e) => setNum(e.target.value.slice(0, 10))} required /></div>
       <button className="btn big full" disabled={busy}>{busy ? 'Abrindo o pagamento…' : botao || (teste ? `Começar meus ${DIAS_TESTE} dias grátis` : `Assinar por ${PRECO}/mês`)}</button>
       {erro && <p className="note err">{erro}</p>}
       <p className="mut sm">{teste ? <>Na próxima tela você cadastra o cartão no ambiente seguro do Asaas. <b>Nada é cobrado agora:</b> a 1ª cobrança de {PRECO} acontece em {d8}. Cancele antes, em Perfil › Assinatura, e não paga nada.</> : <>Na próxima tela você cadastra o cartão no ambiente seguro do Asaas. A cobrança de {PRECO} é mensal e você cancela quando quiser.</>}</p>

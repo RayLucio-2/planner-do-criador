@@ -18,3 +18,19 @@ export function dataAsaas(d: Date, comHora = true) {
   const dia = `${p.year}-${p.month}-${p.day}`
   return comHora ? `${dia} ${p.hour === '24' ? '00' : p.hour}:${p.minute}:${p.second}` : dia
 }
+
+// Endereço pelo CEP (o Asaas exige endereço completo do cliente no checkout de produção)
+export async function dadosEndereco(cepBruto: string, numeroBruto: string) {
+  const cep = String(cepBruto || '').replace(/\D/g, '')
+  const numero = String(numeroBruto || '').trim().slice(0, 10) || 'S/N'
+  if (!/^\d{8}$/.test(cep)) return { erro: 'CEP inválido. Confira os 8 números.' }
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    const j = await r.json()
+    if (j?.erro) return { erro: 'CEP não encontrado. Confira os números.' }
+    return { postalCode: cep, address: j.logradouro || 'Não informado', addressNumber: numero, province: j.bairro || 'Centro', cityName: j.localidade, state: j.uf }
+  } catch {
+    return { postalCode: cep, address: 'Não informado', addressNumber: numero, province: 'Centro' }
+  }
+}
+export const celularValido = (c: string) => /^\d{10,11}$/.test(c)

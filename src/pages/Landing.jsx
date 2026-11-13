@@ -282,15 +282,18 @@ function Isca() {
 }
 
 // Venda do PDF completo: pagamento único no Asaas (PIX ou cartão), entregue por e-mail
+const mascCep = (v) => v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
+const mascCel = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2')
 const mascCpf = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 function ComprarPdf() {
   const [nome, setNome] = useState(''); const [email, setEmail] = useState(''); const [cpf, setCpf] = useState('')
+  const [cel, setCel] = useState(''); const [cep, setCep] = useState(''); const [num, setNum] = useState('')
   const [aceite, setAceite] = useState(false); const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false)
   async function comprar(e) {
     e.preventDefault(); setErro('')
     if (DEMO) { setErro('Na demonstração a compra fica desativada.'); return }
     setBusy(true)
-    const { data, error } = await supabase.functions.invoke('comprar-pdf', { body: { nome, email, cpf } })
+    const { data, error } = await supabase.functions.invoke('comprar-pdf', { body: { nome, email, cpf, celular: cel, cep, numero: num } })
     if (error || !data?.url) {
       let m = data?.erro
       try { m = m || (await error?.context?.json())?.erro } catch (x) { /* ok */ }
@@ -311,6 +314,8 @@ function ComprarPdf() {
           <input className="in big" placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} required autoComplete="name" />
           <input className="in big" type="email" placeholder="E-mail para receber o PDF" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           <input className="in big" placeholder="CPF" inputMode="numeric" value={cpf} onChange={(e) => setCpf(mascCpf(e.target.value))} required />
+          <input className="in big" placeholder="Celular com DDD" inputMode="tel" value={cel} onChange={(e) => setCel(mascCel(e.target.value))} required autoComplete="tel" />
+          <div className="g2 tight"><input className="in big" placeholder="CEP" inputMode="numeric" value={cep} onChange={(e) => setCep(mascCep(e.target.value))} required autoComplete="postal-code" /><input className="in big" placeholder="Número da casa" value={num} onChange={(e) => setNum(e.target.value.slice(0, 10))} required /></div>
           <label className={'ck aceite' + (aceite ? ' on' : '')}><input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} required /><span className="box"><Ic n="check" s={12} w={3} /></span><span className="ckl2">Li e aceito os <Link to="/termos">Termos de uso</Link> e a <Link to="/privacidade">Política de privacidade</Link></span></label>
           <button className="btn big full" disabled={busy || !aceite}>{busy ? 'Abrindo o pagamento…' : `Comprar o PDF por ${PRECO_PDF}`}</button>
           {erro && <p className="note err">{erro}</p>}
