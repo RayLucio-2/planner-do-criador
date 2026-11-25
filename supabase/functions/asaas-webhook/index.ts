@@ -39,6 +39,17 @@ Deno.serve(async (req) => {
   const salva = (user_id: string, campos: Record<string, unknown>) =>
     db.from('subscriptions').update({ ...campos, updated_at: agora }).eq('user_id', user_id)
 
+  // data real da 1ª cobrança: a mensalidade mais antiga da assinatura no Asaas
+  // (o "nextDueDate" da assinatura já pula para o mês seguinte assim que a 1ª mensalidade é gerada)
+  const primeiraCobranca = async (subId?: string | null) => {
+    if (!subId) return null
+    try {
+      const r = await asaas(`/payments?subscription=${subId}&limit=20`)
+      const ps = (r.ok ? (r.body?.data || []) : []).filter((p: any) => !p.deleted && p.dueDate).sort((a: any, b: any) => String(a.dueDate).localeCompare(String(b.dueDate)))
+      return ps[0] ? fimDoDia(ps[0].dueDate) : null
+    } catch { return null }
+  }
+
   // aplica os meses grátis guardados: apaga a próxima mensalidade pendente no Asaas e estende o acesso
   const aplicaCredito = async (sub: any, pagamento?: any) => {
     if (!sub?.provider_subscription_id || !(sub.meses_gratis > 0)) return
@@ -74,6 +85,8 @@ Deno.serve(async (req) => {
         const p = ev.payment || {}
         if (!p.subscription) break
         const sub = await acha('provider_subscription_id', p.subscription)
+        // no teste grátis, a 1ª mensalidade criada define a data da 1ª cobrança
+        if (sub?.status === 'trialing' && p.dueDate && (!sub.trial_end || new Date(fimDoDia(p.dueDate)) < new Date(sub.trial_end))) await salva(sub.user_id, { trial_end: fimDoDia(p.dueDate) })
         if (sub?.meses_gratis > 0) await aplicaCredito(sub, p)
         break
       }
@@ -83,7 +96,7 @@ Deno.serve(async (req) => {
         if (compra) { await entregarPdf(db, compra); break }
         const sub = (await acha('checkout_id', c.id)) || (await acha('provider_customer_id', c.customer)) || (await acha('user_id', c.externalReference))
         if (!sub) { console.log('checkout sem conta', c.id, c.customer); break }
-        const primeira = c.subscription?.nextDueDate ? fimDoDia(c.subscription.nextDueDate) : new Date(Date.now() + DIAS_TESTE * 864e5).toISOString()
+        const primeira = (await primeiraCobranca(sub.provider_subscription_id)) || (c.subscription?.nextDueDate ? fimDoDia(c.subscription.nextDueDate) : new Date(Date.now() + DIAS_TESTE * 864e5).toISOString())
         if (sub.status !== 'active') await salva(sub.user_id, { status: 'trialing', trial_end: primeira, provider: 'asaas', provider_customer_id: c.customer || sub.provider_customer_id })
         break
       }
@@ -94,7 +107,11 @@ Deno.serve(async (req) => {
         if (!sub) { console.log('assinatura sem conta', s.id, s.customer); break }
         const campos: Record<string, unknown> = { provider: 'asaas', provider_subscription_id: s.id, provider_customer_id: s.customer }
         if (s.status === 'INACTIVE' || s.deleted) Object.assign(campos, { status: 'canceled', current_period_end: sub.current_period_end || sub.trial_end || agora })
-        else if (sub.status === 'pendente' || sub.status === 'none') Object.assign(campos, { status: 'trialing', trial_end: s.nextDueDate ? fimDoDia(s.nextDueDate) : new Date(Date.now() + DIAS_TESTE * 864e5).toISOString() })
+        else if (sub.status === 'pendente' || sub.status === 'none' || sub.status === 'trialing') {
+          const pc = await primeiraCobranca(s.id)
+          if (sub.status !== 'trialing') Object.assign(campos, { status: 'trialing', trial_end: pc || (s.nextDueDate ? fimDoDia(s.nextDueDate) : new Date(Date.now() + DIAS_TESTE * 864e5).toISOString()) })
+          else if (pc) campos.trial_end = pc
+        }
         await salva(sub.user_id, campos)
         break
       }
