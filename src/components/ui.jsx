@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useEntry, setField, num, useAno } from '../lib/store'
 
@@ -45,6 +45,10 @@ const P = {
   scissors: <><circle cx="6" cy="6.5" r="2.8" /><circle cx="6" cy="17.5" r="2.8" /><path d="M8.3 8.2 20 18M8.3 15.8 20 6" /></>,
   lock: <><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></>,
   download: <path d="M12 4v11M7 10.5l5 5 5-5M4.5 20h15" />,
+  search: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
+  help: <><circle cx="12" cy="12" r="9" /><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 17.2v.1" /></>,
+  chev: <path d="M6 9l6 6 6-6" />,
+  undo: <path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />,
   bell: <><path d="M6 9.5a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4s2-1.5 2-6.5" /><path d="M10 19.5a2 2 0 0 0 4 0" /></>,
   upload: <path d="M12 16V4M7 9l5-5 5 5M4.5 15v4.5h15V15" />,
   cloud: <path d="M7 18.5h10.5a4 4 0 0 0 .6-8A6 6 0 0 0 6.6 9.3 4.6 4.6 0 0 0 7 18.5z" />,
@@ -116,7 +120,12 @@ export function Rows({ f, cols, min = 3, k, add = 'Adicionar linha', seed }) {
   const rows = Array.isArray(v) ? v : (seed || [])
   const shown = Math.max(rows.length, min)
   const upd = (i, c, val) => { const nr = [...rows]; while (nr.length <= i) nr.push({}); nr[i] = { ...nr[i], [c]: val }; set(nr) }
-  const del = (i) => { const nr = rows.filter((_, j) => j !== i); set(nr) }
+  const atual = useRef(rows); atual.current = rows
+  const del = (i) => {
+    const tirada = rows[i]; set(rows.filter((_, j) => j !== i))
+    const vazia = !tirada || !Object.values(tirada).some((x) => x !== '' && x !== false && x != null)
+    if (!vazia) toast('Linha apagada', ['Desfazer', () => { const nr = [...atual.current]; nr.splice(Math.min(i, nr.length), 0, tirada); set(nr) }])
+  }
   return (
     <div className="rows">
       <div className="rows-h" style={{ gridTemplateColumns: cols.map((c) => c.w || '1fr').join(' ') + ' 28px' }}>
@@ -159,13 +168,41 @@ export function Head({ icon = 'spark', title, sub, kicker, color = 'var(--pink)'
     </header>
   )
 }
-export function Card({ title, icon, color, children, className = '' }) {
+// Card. Com "fold", o título vira um botão que abre e fecha a parte (lembra a escolha enquanto o app está aberto)
+const dobras = {}
+export function Card({ title, icon, color, children, className = '', fold, aberto = true, resumo, id }) {
+  const chave = id || title
+  const [open, setOpen] = useState(fold ? (dobras[chave] ?? aberto) : true)
+  const troca = () => { dobras[chave] = !open; setOpen(!open) }
   return (
-    <section className={'card ' + className}>
-      {title && <h3 className="ch" style={{ color }}>{icon && <Ic n={icon} s={16} />}<span>{title}</span></h3>}
-      {children}
+    <section className={'card ' + className + (fold ? ' fold' + (open ? ' on' : '') : '')}>
+      {title && (fold
+        ? <h3 className="ch"><button className="ch-b" style={{ color }} onClick={troca} aria-expanded={open}>{icon && <Ic n={icon} s={16} />}<span>{title}</span>{resumo && <em className="ch-r">{resumo}</em>}<Ic n="chev" s={16} w={2.4} /></button></h3>
+        : <h3 className="ch" style={{ color }}>{icon && <Ic n={icon} s={16} />}<span>{title}</span></h3>)}
+      {open && children}
     </section>
   )
+}
+
+// ------------------------------------------------------------------ avisos rápidos (com "Desfazer")
+let ouvintes = []
+export function toast(texto, acao) { ouvintes.forEach((f) => f({ texto, acao, id: Date.now() })) }
+export function Toasts() {
+  const [t, setT] = useState(null)
+  useEffect(() => { const f = (x) => setT(x); ouvintes.push(f); return () => { ouvintes = ouvintes.filter((g) => g !== f) } }, [])
+  useEffect(() => { if (!t) return; const id = setTimeout(() => setT(null), 6000); return () => clearTimeout(id) }, [t])
+  if (!t) return null
+  return (
+    <div className="toast" role="status">
+      <span>{t.texto}</span>
+      {t.acao && <button onClick={() => { t.acao[1](); setT(null) }}>{t.acao[0] === 'Desfazer' && <Ic n="undo" s={15} w={2.2} />} {t.acao[0]}</button>}
+    </div>
+  )
+}
+
+// botão "ver exemplo": preenche só o que ainda está vazio
+export function Exemplo({ onFill, children = 'Ver um exemplo' }) {
+  return <button className="exemplo" onClick={onFill}><Ic n="spark" s={14} /> {children}</button>
 }
 export function Field({ label, children, hl }) {
   return <div className="fld"><div className={'lbl' + (hl ? ' hl' : '')}>{label}</div>{children}</div>

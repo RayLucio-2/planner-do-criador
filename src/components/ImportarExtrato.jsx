@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Ic, Card } from './ui'
 import { useEntry, setField, brl, useAno } from '../lib/store'
-import { sugerirCategoria } from '../lib/financeiro'
+import { sugerirCategoria, CATEGORIAS } from '../lib/financeiro'
 
 // ------------------------------------------------------------------ leitura do arquivo
 async function lerTexto(file) {
@@ -99,7 +99,8 @@ export default function ImportarExtrato({ m }) {
       const gasto = t === 'fatura' ? x.valor > 0 : x.valor < 0
       const ref = `${x.data.a}${p2(x.data.m)}${p2(x.data.d)}|${x.valor}|${x.desc}`
       const ignorar = t === 'fatura' && !gasto   // pagamento da fatura ou estorno
-      return { ...x, i, gasto, ref, repetido: ja.has(ref), ignorar, ok: gasto && !ja.has(ref) && !ignorar }
+      // nada vem marcado: a pessoa escolhe o que entra e para onde vai
+      return { ...x, i, gasto, dest: gasto ? 'gasto' : 'entrada', cat: sugerirCategoria(x.desc), ref, repetido: ja.has(ref), ignorar, ok: false }
     })
     if (!prontos.length) { setMsg({ erro: true, t: `Nenhum lançamento de ${m.nome.toLowerCase()} de ${ano} nesse arquivo${fora ? ` (${fora} são de outros meses: abra o mês certo para importar)` : ''}.` }); return }
     setLista(prontos)
@@ -109,8 +110,8 @@ export default function ImportarExtrato({ m }) {
   function importar() {
     const sel = lista.filter((x) => x.ok)
     const limpa = (rows) => (Array.isArray(rows) ? rows : []).filter((r) => Object.values(r).some((v) => v !== '' && v !== false && v != null))
-    const gastos = sel.filter((x) => x.gasto).map((x) => ({ item: `${p2(x.data.d)}/${p2(x.data.m)} ${x.desc}`, cat: sugerirCategoria(x.desc), val: fmt(x.valor), ref: x.ref }))
-    const entradas = sel.filter((x) => !x.gasto).map((x) => ({ cli: x.desc, srv: tipo === 'fatura' ? 'Fatura do cartão' : 'Extrato bancário', val: fmt(x.valor), pago: true, ref: x.ref }))
+    const gastos = sel.filter((x) => x.dest === 'gasto').map((x) => ({ item: `${p2(x.data.d)}/${p2(x.data.m)} ${x.desc}`, cat: x.cat, val: fmt(x.valor), ref: x.ref }))
+    const entradas = sel.filter((x) => x.dest === 'entrada').map((x) => ({ cli: x.desc, srv: tipo === 'fatura' ? 'Fatura do cartão' : 'Extrato bancário', val: fmt(x.valor), pago: true, ref: x.ref }))
     if (gastos.length) setField(k, 'gastos', [...limpa(e.gastos), ...gastos])
     if (entradas.length) setField(k, 'contratos', [...limpa(e.contratos), ...entradas])
     setLista(null)
@@ -118,11 +119,12 @@ export default function ImportarExtrato({ m }) {
   }
 
   const marcar = (i) => setLista(lista.map((x) => x.i === i ? { ...x, ok: !x.ok } : x))
+  const muda = (i, campo, v) => setLista(lista.map((x) => x.i === i ? { ...x, [campo]: v, ok: true } : x))
   const todos = (v) => setLista(lista.map((x) => ({ ...x, ok: v && !x.ignorar && !x.repetido })))
   const nSel = lista ? lista.filter((x) => x.ok).length : 0
 
   return (
-    <Card title="Importar extrato ou fatura" icon="upload" color={m.cor}>
+    <Card title="Importar extrato ou fatura" icon="upload" color={m.cor} fold aberto={!!lista} id="neg-importar">
       {!lista ? <>
         <p className="mut sm">Puxe os lançamentos do banco para este mês em vez de digitar um por um. Use o arquivo <b>CSV ou OFX</b> que o app ou o site do banco exporta (PDF não funciona). O arquivo é lido só no seu aparelho.</p>
         <div className="g2 tight">
@@ -130,16 +132,22 @@ export default function ImportarExtrato({ m }) {
           <label className="btn ghost"><Ic n="flyer" s={16} /> Fatura do cartão<input type="file" accept=".csv,.ofx,.txt,text/csv" hidden onChange={(ev) => abrir(ev, 'fatura')} /></label>
         </div>
       </> : <>
-        <p className="mut sm">Marque só o que é do seu trabalho. Saídas vão para <b>Gastos do negócio</b>; entradas, para <b>Contratos e entradas</b>.</p>
+        <p className="mut sm">Nada vem marcado: escolha só o que é do seu trabalho e para onde cada lançamento vai (<b>Gasto do negócio</b> ou <b>Entrada</b>). Nos gastos, confira a categoria.</p>
         <div className="imp-top"><button className="link sm" onClick={() => todos(true)}>marcar todos</button><button className="link sm" onClick={() => todos(false)}>desmarcar todos</button></div>
         <div className="imp-l">
           {lista.map((x) => (
-            <label key={x.i} className={'imp-r' + (x.ok ? ' on' : '') + (x.ignorar || x.repetido ? ' off' : '')}>
-              <input type="checkbox" checked={x.ok} disabled={x.ignorar} onChange={() => marcar(x.i)} />
-              <span className="imp-d">{p2(x.data.d)}/{p2(x.data.m)}</span>
-              <span className="imp-t">{x.desc}{x.repetido && <em> · já importado</em>}{x.ignorar && <em> · pagamento ou estorno</em>}</span>
-              <b className={x.gasto ? 'neg' : 'pos'}>{x.gasto ? '-' : '+'}{brl(Math.abs(x.valor))}</b>
-            </label>
+            <div key={x.i} className={'imp-r' + (x.ok ? ' on' : '') + (x.ignorar || x.repetido ? ' off' : '')}>
+              <label className="imp-1">
+                <input type="checkbox" checked={x.ok} disabled={x.ignorar} onChange={() => marcar(x.i)} aria-label={`Importar ${x.desc}`} />
+                <span className="imp-d">{p2(x.data.d)}/{p2(x.data.m)}</span>
+                <span className="imp-t">{x.desc}{x.repetido && <em> · já importado</em>}{x.ignorar && <em> · pagamento ou estorno</em>}</span>
+                <b className={x.gasto ? 'neg' : 'pos'}>{x.gasto ? '-' : '+'}{brl(Math.abs(x.valor))}</b>
+              </label>
+              {!x.ignorar && <div className="imp-2">
+                <select className="in sel" value={x.dest} onChange={(e) => muda(x.i, 'dest', e.target.value)} aria-label="Para onde vai"><option value="gasto">Gasto do negócio</option><option value="entrada">Entrada / contrato</option></select>
+                {x.dest === 'gasto' && <select className="in sel" value={x.cat} onChange={(e) => muda(x.i, 'cat', e.target.value)} aria-label="Categoria">{CATEGORIAS.filter(Boolean).map((c) => <option key={c} value={c}>{c}</option>)}</select>}
+              </div>}
+            </div>
           ))}
         </div>
         <div className="g2 tight">

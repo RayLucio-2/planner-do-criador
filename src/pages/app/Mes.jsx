@@ -1,6 +1,6 @@
 import { Link, NavLink, useParams, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { Ic, Head, Card, Checklist, Rows, Entry, A, T, N, C, S, Field, Calc, useF, Stat } from '../../components/ui'
+import { Ic, Head, Card, Checklist, Rows, Entry, A, T, N, C, S, Field, Calc, useF, Stat, Exemplo, toast } from '../../components/ui'
 import { MESES, MES, foco, mesesDoAno, ANOS_BONUS, datasDoAno, WD, ANALISE, FORMATOS, ETAPAS, CHECK_SET, diasDoMes, semanas } from '../../data/content'
 import { useEntry, num, brl, int, setField, useStoreVersion, useAno } from '../../lib/store'
 import { mesStats } from '../../lib/calc'
@@ -167,6 +167,12 @@ function Semanas({ m }) {
   )
 }
 
+const EX_ROTEIRO = {
+  titulo: '3 erros que fazem seu Reels parecer amador', fmt: 'Reels', status: 'Roteirizado', quem: 'Donas de pequenos negócios', dor: 'Gravam e ninguém assiste até o fim', faz: 'Desistem de gravar e acham que não levam jeito',
+  gancho: 'Seu vídeo não é ruim. Ele só começa do jeito errado.', prob: 'Você grava com carinho, posta, e as pessoas saem nos primeiros segundos.', virada: 'Três ajustes resolvem: comece pela frase mais forte, grave de frente para a janela e corte as pausas.',
+  prova: 'Mostre o antes e depois do mesmo vídeo com os três ajustes.', cham: 'Salve para lembrar na próxima gravação e me conte qual erro você comete.', leg: 'Cenas: eu na janela, tela do app de edição. Palavras: reels, gravar, iniciante',
+}
+
 function Roteiros({ m }) {
   const [lista, set] = useF('lista')
   const rs = Array.isArray(lista) && lista.length ? lista : [{}]
@@ -177,7 +183,8 @@ function Roteiros({ m }) {
       {rs.map((r, i) => (
         <section className="rt card" key={i} style={{ '--c': m.cor }}>
           <div className="rt-h"><span className="rt-n">#{i + 1}</span><input className="in big" placeholder="Título / tema do vídeo" value={r.titulo || ''} onChange={(e) => upd(i, 'titulo', e.target.value)} />
-            {rs.length > 1 && <DelBtn onDel={() => set(rs.filter((_, j) => j !== i))} />}</div>
+            {rs.length > 1 && <DelBtn onDel={() => { const tirado = rs[i]; set(rs.filter((_, j) => j !== i)); toast('Roteiro apagado', ['Desfazer', () => { const n = rs.filter((_, j) => j !== i); n.splice(i, 0, tirado); set(n) }]) }} />}</div>
+          {!r.titulo && !r.gancho && !r.prob && <Exemplo onFill={() => { const n = [...rs]; n[i] = { ...EX_ROTEIRO, ...Object.fromEntries(Object.entries(r).filter(([, v]) => v)) }; set(n) }}>Ver um roteiro de exemplo</Exemplo>}
           <div className="g3 tight">
             <select className="in sel" value={r.fmt || ''} onChange={(e) => upd(i, 'fmt', e.target.value)}>{FORMATOS.map((o) => <option key={o} value={o}>{o || 'formato'}</option>)}</select>
             <input className="in" placeholder="Data de postagem" value={r.data || ''} onChange={(e) => upd(i, 'data', e.target.value)} />
@@ -264,7 +271,7 @@ function Negocio({ m }) {
         {s.meta > 0 && <><div className="prog big"><i style={{ width: Math.min(100, s.ent / s.meta * 100) + '%' }} /></div><p className="mut sm">{s.ent >= s.meta ? 'Meta batida! 🎉' : `${Math.round(s.ent / s.meta * 100)}% da meta · faltam ${brl(s.meta - s.ent)}`}</p></>}
       </Card>
       <ImportarExtrato m={m} />
-      <Card title="Contratos e entradas" icon="coin" color={m.cor}>
+      <Card title="Contratos e entradas" fold id="neg-contratos" resumo={brl(s.ent)} icon="coin" color={m.cor}>
         <Rows f="contratos" min={3} add="Adicionar contrato" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'srv', l: 'Serviço', w: '1.2fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'venc', l: 'Vencimento', t: 'date', w: '140px' }, { k: 'pago', l: 'Pago', t: 'check', w: '44px' }, { k: 'rep', l: 'Fixo', t: 'check', w: '44px' }]} />
         <p className="mut sm"><b>Fixo</b> = cliente mensal: ele já aparece no mês seguinte, com o vencimento do mês seguinte.</p>
       </Card>
@@ -272,7 +279,7 @@ function Negocio({ m }) {
         <ReceberLista itens={pend} />
       </Card>}
       <div className="g2">
-        <Card title="Gastos do negócio" icon="flyer" color={m.cor}>
+        <Card title="Gastos do negócio" icon="flyer" color={m.cor} fold id="neg-gastos" resumo={brl(s.gas)}>
           <Rows f="gastos" min={3} add="Adicionar gasto" cols={[{ k: 'item', l: 'Item' }, { k: 'cat', l: 'Categoria', t: 'select', opts: CATEGORIAS, w: '1fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'rep', l: 'Fixo', t: 'check', w: '44px' }]} />
           <p className="mut sm"><b>Fixo</b> = assinatura ou conta que se repete: já aparece no mês seguinte.</p>
         </Card>
@@ -289,15 +296,16 @@ function Negocio({ m }) {
           <p className="mut sm">Pró-labore é o que você tira para você. Separar isso mostra se o trabalho está pagando as suas contas.</p>
         </Card>
       </div>
-      {catL.length > 0 && <Card title="Para onde foi o dinheiro" icon="chart" color="#E11D48">
+      {catL.length > 0 && <Card title="Para onde foi o dinheiro" icon="chart" color="#E11D48" fold aberto={false} id="neg-cats" resumo={`${catL.length} ${catL.length === 1 ? 'categoria' : 'categorias'}`}>
         {catL.map(([c, v]) => <div key={c} className="catl"><div className="kv"><span>{c}</span><b>{brl(v)}</b></div><div className="prog"><i style={{ width: (v / catL[0][1] * 100) + '%', background: '#E11D48' }} /></div></div>)}
       </Card>}
-      <Card title="Propostas" icon="send" color={m.cor}>
+      <Card title="Propostas" icon="send" color={m.cor} fold aberto={props.length > 0} id="neg-props" resumo={props.length ? `${props.length} · ${fech} ${fech === 1 ? 'fechada' : 'fechadas'}` : ''}>
         {props.length > 0 && <div className="kv"><span>{props.length} {props.length === 1 ? 'enviada' : 'enviadas'} · {fech} {fech === 1 ? 'fechada' : 'fechadas'}{decid ? ` · taxa de fechamento ${Math.round(fech / decid * 100)}%` : ''}</span>{emNeg > 0 && <b>{brl(emNeg)} em negociação</b>}</div>}
         <Rows f="props" min={2} add="Adicionar proposta" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'env', l: 'Enviada em', t: 'date', w: '140px' }, { k: 'st', l: 'Status', t: 'select', opts: STATUS_PROP, w: '130px' }]} />
+        {!props.length && <Exemplo onFill={() => setField(k, 'props', [{ cli: 'Studio Fit (exemplo)', val: '900', env: new Date().toISOString().slice(0, 10), st: 'Enviada' }])}>Ver um exemplo de proposta</Exemplo>}
         {neg.propostas && <Field label="Anotações antigas"><A f="propostas" /></Field>}
       </Card>
-      <Card><Field label="Avaliações pedidas no Google"><A f="aval" /></Field></Card>
+      <Card title="Avaliações pedidas no Google" icon="globe" color={m.cor} fold aberto={!!neg.aval} id="neg-aval"><A f="aval" /></Card>
     </>
   )
 }

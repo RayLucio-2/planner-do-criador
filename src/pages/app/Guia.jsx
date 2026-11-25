@@ -1,12 +1,15 @@
 import { Link, useParams } from 'react-router-dom'
 import { Ic, Md, Head, Card, Checklist, Rows, Entry, Tip, Tweet, A, Field } from '../../components/ui'
 import { LICOES } from '../../data/content'
-import { useEntry } from '../../lib/store'
+import { useEntry, setField, useStoreVersion, getEntry } from '../../lib/store'
 
 export function GuiaIndex() {
+  useStoreVersion()
+  const feitas = LICOES.filter((l) => getEntry(l.id).feita).length
   return (
     <div className="page">
       <Head icon="bulb" title="O guia" sub="As lições de quem começou só com o celular" kicker="parte 1" />
+      <div className="guia-p"><div className="kv"><span>{feitas} de {LICOES.length} lições concluídas</span><b>{Math.round(feitas / LICOES.length * 100)}%</b></div><div className="prog big"><i style={{ width: (feitas / LICOES.length * 100) + '%' }} /></div></div>
       <Link to="/app/carta" className="row-link"><span className="rl-n" style={{ background: 'var(--grad)' }}><Ic n="heart" s={16} /></span><div><b>Antes de começar</b><span>Uma conversa sincera sobre como eu comecei</span></div><Ic n="right" s={16} /></Link>
       {LICOES.map((l) => <LessonLink key={l.id} l={l} />)}
     </div>
@@ -19,7 +22,7 @@ function LessonLink({ l }) {
   return (
     <Link to={`/app/guia/${l.id}`} className="row-link" style={{ '--c': l.cor }}>
       <span className="rl-n" style={{ background: l.cor }}><Ic n={l.icon} s={16} /></span>
-      <div><small>{l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'}</small><b>{l.titulo}</b><span>{l.sub}</span>
+      <div><small>{l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'}{d.feita && <em className="feita"> · concluída ✓</em>}</small><b>{l.titulo}</b><span>{l.sub}</span>
         {total > 0 && <div className="prog"><i style={{ width: `${(feitos / total) * 100}%`, background: l.cor }} /></div>}</div>
       <Ic n="right" s={16} />
     </Link>
@@ -38,6 +41,7 @@ export function Licao() {
         {l.intro && <p className="cap"><Md t={l.intro} /></p>}
         {l.blocos.map((b, j) => <Bloco key={j} b={b} j={j} />)}
         <Card title="Anotações" icon="note"><A f="notas" rows={4} ph="Escreva aqui…" /></Card>
+        <Concluir id={l.id} />
         <div className="pn">
           {prev ? <Link to={`/app/guia/${prev.id}`} className="btn ghost"><Ic n="left" s={16} /> {prev.titulo}</Link> : <span />}
           {next ? <Link to={`/app/guia/${next.id}`} className="btn ghost">{next.titulo} <Ic n="right" s={16} /></Link> : <Link to="/app/ferramentas" className="btn">Ir para as ferramentas <Ic n="right" s={16} /></Link>}
@@ -64,4 +68,11 @@ function Bloco({ b, j }) {
     case 'ciclo': return <div className="cyc">{b.itens.map(([t, s], i) => <div className="cyc-i" key={t}><b>{t}</b><span>{s}</span>{i < b.itens.length - 1 ? <Ic n="right" s={14} w={2.4} /> : <Ic n="loop" s={14} w={2.4} />}</div>)}</div>
     default: return null
   }
+}
+
+function Concluir({ id }) {
+  const d = useEntry(id)
+  return d.feita
+    ? <div className="concl on"><Ic n="check" s={18} w={3} /><b>Lição concluída</b><button className="link sm" onClick={() => setField(id, 'feita', false)}>desfazer</button></div>
+    : <button className="btn big full concl-b" onClick={() => setField(id, 'feita', true)}><Ic n="check" s={18} w={3} /> Marcar lição como concluída</button>
 }

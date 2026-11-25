@@ -154,6 +154,16 @@ function subscribe(f) { subs.add(f); return () => subs.delete(f) }
 export function useStoreVersion() { return useSyncExternalStore(subscribe, () => version) }
 export function useEntry(key) { useStoreVersion(); return data[rk(key)] || {} }
 export function getEntry(key) { return data[rk(key)] || {} }
+// todas as páginas do ano aberto (e as que valem para todos os anos), sem o prefixo do ano. Usado na busca.
+export function entradasVisiveis() {
+  const out = []
+  for (const [k, v] of Object.entries(data)) {
+    const m = k.match(/^(\d{4}):(.*)$/)
+    if (m) { if (Number(m[1]) === ano) out.push([m[2], v]) }
+    else if (ano === ANO_INICIAL || GLOBAL.has(k.split('.')[0])) out.push([k, v])
+  }
+  return out
+}
 // lê uma página de outro ano (ex.: dezembro do ano anterior)
 export function getEntryAno(key, y) { const base = key.split('.')[0]; return data[GLOBAL.has(base) || y === ANO_INICIAL ? key : `${y}:${key}`] || {} }
 export function useLoaded() { useStoreVersion(); return loaded }

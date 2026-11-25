@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Ic, Md, Head, Stat, Tweet } from '../../components/ui'
-import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno } from '../../data/content'
-import { useEntry, useStoreVersion, brl, int, getAno, useAno } from '../../lib/store'
+import { anoFinanceiro } from '../../lib/financeiro'
+import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno, LICOES } from '../../data/content'
+import { useEntry, useStoreVersion, brl, int, getAno, useAno, setField, getEntry, num } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
 
 export function mesAtual() {
@@ -42,11 +43,7 @@ export default function Home() {
         <b>{foco(m.n, ano)[0]}</b><p>{foco(m.n, ano)[1]}</p>
       </Link>
 
-      <Link to={`/app/mes/${m.k}/editorial`} className="card today">
-        <div className="ch"><Ic n="cal" s={16} /><span>{ehAno ? 'Hoje' : 'Primeiro post do período'} · {String(dia).padStart(2, '0')}/{String(m.n).padStart(2, '0')}</span>{DATAS[`${m.n}-${dia}`] && <em className="chip">{DATAS[`${m.n}-${dia}`][0]}</em>}</div>
-        <p className="big">{ed[`${dia}.ideia`] || <span className="mut">Nenhuma ideia planejada. Toque para abrir o calendário editorial.</span>}</p>
-        {ed[`${dia}.fmt`] && <span className="chip">{ed[`${dia}.fmt`]}</span>}
-      </Link>
+      <HojeCard m={m} dia={dia} ehAno={ehAno} ed={ed} DATAS={DATAS} />
 
       <div className="stats">
         <Stat icon="play" label="Publicados no ano" value={int(t.pub)} color="#FF3D77" />
@@ -77,5 +74,35 @@ export function Carta() {
       </article>
       <Tweet text="“Não espere ter tudo para começar. Comece, e deixe o trabalho pagar o próximo passo.”" />
     </div>
+  )
+}
+
+// "Hoje": o que fazer agora, sem precisar navegar
+function HojeCard({ m, dia, ehAno, ed, DATAS }) {
+  const vis = useEntry(`${m.k}.visao`)
+  const f = anoFinanceiro()
+  const cobrar = f.aReceber.filter((r) => r.sit === 'atrasado' || r.sit === 'hoje')
+  const metas = [1, 2, 3].filter((k) => vis[`meta${k}`] && !vis[`metaok${k}`])
+  const prox = LICOES.find((l) => !getEntry(l.id).feita)
+  const tg = (k, f2, v) => setField(k, f2, v)
+  const ideia = ed[`${dia}.ideia`]
+  return (
+    <section className="card today">
+      <div className="ch"><Ic n="cal" s={16} /><span>{ehAno ? 'Hoje' : 'Primeiro post do período'} · {String(dia).padStart(2, '0')}/{String(m.n).padStart(2, '0')}</span>{DATAS[`${m.n}-${dia}`] && <em className="chip">{DATAS[`${m.n}-${dia}`][0]}</em>}</div>
+      <Link to={`/app/mes/${m.k}/editorial`} className="hj-post">
+        <p className="big">{ideia || <span className="mut">Nenhuma ideia planejada. Toque para abrir o calendário editorial.</span>}</p>
+        {ed[`${dia}.fmt`] && <span className="chip">{ed[`${dia}.fmt`]}</span>}
+      </Link>
+      {ideia && <div className="hj-ck">
+        {[['grav', 'Gravei'], ['post', 'Postei']].map(([k, l]) => { const on = !!ed[`${dia}.${k}`]; return (
+          <button key={k} className={'hj-b' + (on ? ' on' : '')} aria-pressed={on} onClick={() => tg(`${m.k}.ed`, `${dia}.${k}`, !on)}><span className="hj-bx">{on && <Ic n="check" s={12} w={3} />}</span>{l}</button>
+        ) })}
+      </div>}
+      {cobrar.length > 0 && <Link to="/app/financeiro" className="hj-i warn"><Ic n="bell" s={16} /><span><b>{cobrar.length === 1 ? '1 cobrança' : `${cobrar.length} cobranças`}</b> para hoje ou atrasada{cobrar.length > 1 ? 's' : ''} · {brl(cobrar.reduce((s2, r) => s2 + num(r.val), 0))}</span><Ic n="right" s={14} /></Link>}
+      {metas.map((k) => (
+        <div key={k} className="hj-i"><button className="hj-bx" aria-label="Marcar meta como feita" onClick={() => tg(`${m.k}.visao`, `metaok${k}`, true)} /><span><small>meta do mês</small> {vis[`meta${k}`]}</span></div>
+      ))}
+      {prox && <Link to={`/app/guia/${prox.id}`} className="hj-i"><Ic n="bulb" s={16} /><span><small>próxima lição</small> {prox.titulo}</span><Ic n="right" s={14} /></Link>}
+    </section>
   )
 }

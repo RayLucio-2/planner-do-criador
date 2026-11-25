@@ -1,7 +1,9 @@
 import { NavLink, Outlet, Link, useLocation, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { Ic } from '../../components/ui'
-import { useStatus, useAno, setAno, ANOS, useEntry, useLoaded } from '../../lib/store'
+import { Ic, Toasts } from '../../components/ui'
+import QuickAdd from '../../components/QuickAdd'
+import Tour from '../../components/Tour'
+import { useStatus, useAno, setAno, ANOS, useEntry, useLoaded, setField } from '../../lib/store'
 import { useAuth } from '../../lib/auth'
 import { DEMO } from '../../lib/supabase'
 import { IG_URL } from '../../data/content'
@@ -20,6 +22,7 @@ export default function Shell() {
       <header className="top">
         <Link to="/app" className="brand">planner<i>.</i>do<i>.</i>criador</Link>
         <div className="top-r">
+          <Link to="/app/busca" className="lupa" aria-label="Buscar no planner"><Ic n="search" s={18} w={2.2} /></Link>
           <label className="anosel" title="Trocar o ano do planner"><select value={ano} onChange={(e) => setAno(Number(e.target.value))} aria-label="Ano do planner">{ANOS.map((y) => <option key={y} value={y}>{y}</option>)}</select></label>
           {trialDays != null && <Link to="/app/perfil" className="trial">teste: {trialDays} {trialDays === 1 ? 'dia' : 'dias'}</Link>}
           <span className={'sync ' + (DEMO ? 'demo' : st)} title={label}><Ic n="cloud" s={16} /><span>{label}</span></span>
@@ -27,6 +30,9 @@ export default function Shell() {
       </header>
       <main className="main"><Outlet /></main>
       <footer className="app-ft"><a href={IG_URL} target="_blank" rel="noreferrer" className="igb"><Ic n="at" s={13} w={2.2} /> @aritamende.s</a><span className="telora-ft">uma criação <b>Télora Produtora</b></span></footer>
+      <QuickAdd />
+      <Toasts />
+      {!capa.tour && <Tour onFim={() => setField('capa', 'tour', true)} />}
       <nav className="tabbar">
         {TABS.map(([to, ic, l, end]) => (
           <NavLink key={to} to={to} end={end} className={({ isActive }) => 'tb' + (isActive ? ' on' : '')}><Ic n={ic} s={22} /><span>{l}</span></NavLink>

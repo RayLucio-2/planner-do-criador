@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
-import { Ic, Head, Card, Checklist, Rows, Entry, Tip, A, T, N, C, Field, Calc, useF, sumRows } from '../../components/ui'
+import { Ic, Head, Card, Checklist, Rows, Entry, Tip, A, T, N, C, Field, Calc, useF, sumRows, Exemplo } from '../../components/ui'
 import { AREAS, METAS_AREAS, MESES, mesesDoAno, datasDoAno, diasDoMes } from '../../data/content'
-import { useEntry, num, brl, useStoreVersion, useAno } from '../../lib/store'
+import { useEntry, num, brl, useStoreVersion, useAno, setField } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
 
 export const fmtAno = (t, ano) => t.replace('{ano}', ano).replace('{ant}', ano - 1)
@@ -93,8 +93,12 @@ function Metas() {
 }
 
 function Publico() {
+  const d = useEntry('publico')
+  const vazio = !['nome', 'quem', 'dores', 'desejos', 'maior'].some((f) => d[f])
+  const ex = { nome: 'Carla', prof: '34 anos · dona de uma loja de roupas', segue: 'Perfis de moda, empreendedoras locais', quem: 'Tem uma loja física pequena, vende bem no boca a boca, mas o Instagram está parado. Faz tudo sozinha.', onde: 'Instagram e grupos de WhatsApp do bairro; na rua, na própria loja e em feiras.', dores: 'Não tem tempo de gravar; sente vergonha de aparecer; posta e ninguém interage; já pagou alguém e não viu resultado.', desejos: 'Vender mais sem depender só de quem passa na porta; ter um perfil bonito que passe confiança.', obj: 'Acha caro; tem medo de ser mais um gasto sem retorno; acha que o público dela não está no Instagram.', pal: '“Eu não tenho tempo nem de respirar.” “Eu travo na frente da câmera.”', maior: 'Ela sabe vender pessoalmente, mas não consegue mostrar isso no Instagram.' }
   return (
     <>
+      {vazio && <Exemplo onFill={() => Object.entries(ex).forEach(([f, v]) => { if (!d[f]) setField('publico', f, v) })}>Preencher com um exemplo para editar</Exemplo>}
       <Card className="persona"><div className="ring big"><div><Ic n="users" s={28} /></div></div>
         <div className="pf"><T f="nome" ph="Nome fictício" /><T f="prof" ph="Idade · profissão" /><T f="segue" ph="Segue quem?" /></div></Card>
       <div className="g2"><Card><Field label="Quem é"><A f="quem" /></Field></Card><Card><Field label="Onde encontro essa pessoa (on-line e na rua)"><A f="onde" /></Field></Card></div>

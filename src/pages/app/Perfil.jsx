@@ -5,7 +5,9 @@ import { DEMO, PRECO, DIAS_TESTE, supabase } from '../../lib/supabase'
 import { Link } from 'react-router-dom'
 import Lembretes from '../../components/Lembretes'
 import { track } from '../../lib/analytics'
-import { exportAll, importAll, clearLocal } from '../../lib/store'
+import { exportAll, importAll, clearLocal, setField } from '../../lib/store'
+const WHATS = (import.meta.env.VITE_WHATSAPP || '').replace(/\D/g, '')
+const EMAIL = import.meta.env.VITE_EMAIL_CONTATO || ''
 import { IG_URL } from '../../data/content'
 import Preco from '../../components/Preco'
 
@@ -99,6 +101,16 @@ export default function Perfil() {
 
       <Card title="Lembretes" icon="spark" color="var(--pink)"><Lembretes /></Card>
 
+
+      <Card title="Precisa de ajuda?" icon="help" color="var(--violet)">
+        <p className="mut sm">Ficou com dúvida ou algo não funcionou? Fale com a gente, respondemos rapidinho.</p>
+        <div className="g2 tight">
+          {WHATS && <a className="btn ghost" href={`https://wa.me/${WHATS}?text=${encodeURIComponent('Oi! Preciso de ajuda com o Planner do Criador.')}`} target="_blank" rel="noreferrer"><Ic n="comment" s={16} /> WhatsApp</a>}
+          <a className="btn ghost" href="https://ig.me/m/aritamende.s" target="_blank" rel="noreferrer"><Ic n="send" s={16} /> Direct no Instagram</a>
+          {EMAIL && <a className="btn ghost" href={`mailto:${EMAIL}?subject=${encodeURIComponent('Ajuda com o Planner do Criador')}`}><Ic n="at" s={16} /> E-mail</a>}
+        </div>
+        <button className="link sm" onClick={() => setField('capa', 'tour', false)}>Ver de novo o tour do app</button>
+      </Card>
 
       <Card title="Backup" icon="cloud" color="#3B82F6">
         <p className="mut sm">{DEMO ? 'Na demonstração os dados ficam só neste aparelho. Baixe um backup para não perder.' : 'Seus dados já ficam salvos na sua conta. O backup é uma cópia extra.'}</p>
