@@ -21,7 +21,7 @@ const RECURSOS = [
   ['pen', 'Roteiros ilimitados', 'Gancho, problema, virada, prova e chamada. Escreva quantos roteiros quiser, por mês.', '#8B5CF6'],
   ['chart', 'Análise do mês', 'Meta x real com % calculada sozinha: alcance, retenção, salvamentos, mensagens e contratos.', '#FF7A2F'],
   ['coin', 'Negócio do mês', 'Contratos, gastos, caixinha do equipamento e quanto sobrou, tudo somado automaticamente.', '#10B981'],
-  ['bulb', '6 lições de quem começou do zero', 'Do celular ao primeiro contrato: roteiro, Google Meu Negócio, panfleto e porta em porta.', '#3B82F6'],
+  ['bulb', '8 lições de quem começou do zero', 'Do celular ao primeiro contrato: roteiro, Google Meu Negócio, panfleto e porta em porta.', '#3B82F6'],
   ['trophy', 'Seu ano em números', 'Uma retrospectiva automática do ano: posts, visualizações, contratos e faturamento.', '#F59E0B'],
 ]
 const PRINTS = [
@@ -103,7 +103,7 @@ function Celular() {
     <div className="lp-phone">
       <div className="phn">
         <div className="phn-bar"><b>planner.do.criador</b><span>•••</span></div>
-        <div className="phn-prof"><div className="ring"><div /></div><div className="phn-st"><div><b>12</b><span>meses</span></div><div><b>6</b><span>lições</span></div><div><b>∞</b><span>roteiros</span></div></div></div>
+        <div className="phn-prof"><div className="ring"><div /></div><div className="phn-st"><div><b>12</b><span>meses</span></div><div><b>8</b><span>lições</span></div><div><b>∞</b><span>roteiros</span></div></div></div>
         <div className="phn-bio"><b>Comece com o que você tem</b><span>estudar · gravar · publicar · mapear · ajustar</span></div>
         <div className="phn-grid">{['#FFB020', '#FF3D77', '#8B5CF6', '#10B981', '#FF7A2F', '#3B82F6', '#EC4899', '#14B8A6', '#F59E0B'].map((c) => <i key={c} style={{ background: c }} />)}</div>
       </div>
@@ -171,7 +171,7 @@ export function Rodape() {
         <a className="ft-mail" href={`mailto:${EMAIL_CONTATO}`}><Ic n="send" s={14} /> {EMAIL_CONTATO}</a>
       </div>
       <span className="lp-legal"><Link to="/ajuda">Central de ajuda</Link><Link to="/termos">Termos de uso</Link><Link to="/privacidade">Privacidade</Link>{ARTIFACT && !LANCADO && <Link to="/entrar">Ver o app (demonstração)</Link>}</span>
-      <span className="mut sm">© 2027 Planner do Criador · <b className="telora">Télora Produtora</b></span>
+      <span className="mut sm">© {new Date().getFullYear()} Planner do Criador · <b className="telora">Télora Produtora</b></span>
     </footer>
   )
 }
@@ -194,7 +194,7 @@ function LandingVendas() {
         <div className="lp-phone">
           <div className="phn">
             <div className="phn-bar"><b>planner.do.criador</b><span>•••</span></div>
-            <div className="phn-prof"><div className="ring"><div /></div><div className="phn-st"><div><b>12</b><span>meses</span></div><div><b>6</b><span>lições</span></div><div><b>∞</b><span>roteiros</span></div></div></div>
+            <div className="phn-prof"><div className="ring"><div /></div><div className="phn-st"><div><b>12</b><span>meses</span></div><div><b>8</b><span>lições</span></div><div><b>∞</b><span>roteiros</span></div></div></div>
             <div className="phn-bio"><b>Comece com o que você tem</b><span>estudar · gravar · publicar · mapear · ajustar</span></div>
             <div className="phn-grid">{['#FFB020', '#FF3D77', '#8B5CF6', '#10B981', '#FF7A2F', '#3B82F6', '#EC4899', '#14B8A6', '#F59E0B'].map((c) => <i key={c} style={{ background: c }} />)}</div>
           </div>

@@ -8,6 +8,7 @@ import { CATEGORIAS, STATUS_PROP, situacao, mesAnterior, maisUmMes, lista } from
 import { linkAgenda } from '../../lib/agenda'
 import ImportarExtrato from '../../components/ImportarExtrato'
 import { useBloqueio, Bloqueado } from '../../lib/bloqueio'
+import { sincronizarRoteiro, lerData } from '../../lib/ligacoes'
 
 export function MesesIndex() {
   useStoreVersion()
@@ -144,17 +145,24 @@ function Semanas({ m }) {
   const ano = useAno(); const YEAR = ano; const DATAS = datasDoAno(ano)
   const ws = semanas(m.n, ano)
   const dias = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
+  const ed = useEntry(`${m.k}.ed`)
   return (
     <>
-      <Card title="Ritmo do mês" icon="check" color={m.cor}>
-        <p className="mut sm">Marque cada etapa concluída na semana.</p>
-        {ws.map(([a, b], w) => (
-          <div className="wk" key={w}>
-            <div className="wk-h"><b>Semana {w + 1}</b><span className="mut">{String(a).padStart(2, '0')}–{String(b).padStart(2, '0')}</span></div>
-            <div className="wk-c">{ETAPAS.map(([k, l]) => <C key={k} f={`rit.${w + 1}.${k}`} label={l.split(' /')[0]} />)}</div>
-            <T f={`rit.${w + 1}.como`} ph="Como foi a semana (uma linha basta)" />
-          </div>
-        ))}
+      <Card title="Ritmo e revisão da semana" icon="check" color={m.cor}>
+        <p className="mut sm">Marque as etapas feitas e, no fim da semana, responda as 2 perguntas. Leva 5 minutos.</p>
+        {ws.map(([a, b], w) => {
+          let pl = 0, po = 0; const feitos = []
+          for (let d = a; d <= b; d++) { if (ed[`${d}.ideia`]) pl++; if (ed[`${d}.post`]) { po++; if (ed[`${d}.ideia`]) feitos.push(ed[`${d}.ideia`]) } }
+          return (
+            <div className="wk" key={w}>
+              <div className="wk-h"><b>Semana {w + 1}</b><span className="mut">{String(a).padStart(2, '0')} a {String(b).padStart(2, '0')}</span>{pl > 0 && <em className="wk-n">{po} de {pl} postados</em>}</div>
+              <div className="wk-c">{ETAPAS.map(([k, l]) => <C key={k} f={`rit.${w + 1}.${k}`} label={l.split(' /')[0]} />)}</div>
+              {feitos.length > 0 && <p className="mut sm wk-p">Postei: {feitos.join(' · ')}</p>}
+              <T f={`rit.${w + 1}.como`} ph="O que funcionou (o post que foi melhor e por quê)" />
+              <T f={`rit.${w + 1}.prox`} ph="O que gravo na próxima semana" />
+            </div>
+          )
+        })}
       </Card>
       <Card title="Semana modelo" icon="film" color={m.cor}>
         <div className="g2 tight"><T f="de" ph="de (data)" /><T f="ate" ph="até (data)" /></div>
@@ -178,7 +186,7 @@ const EX_ROTEIRO = {
 function Roteiros({ m }) {
   const [lista, set] = useF('lista')
   const rs = Array.isArray(lista) && lista.length ? lista : [{}]
-  const upd = (i, k, v) => { const n = [...rs]; n[i] = { ...n[i], [k]: v }; set(n) }
+  const upd = (i, k, v) => { const n = [...rs]; n[i] = { ...n[i], [k]: v }; set(n); if (['status', 'data'].includes(k) || (k === 'titulo' && n[i].data)) sincronizarRoteiro(n[i]) }
   const partes = [['gancho', 'Gancho', '0 a 3 s'], ['prob', 'Problema', '3 a 10 s'], ['virada', 'Virada', 'a ideia'], ['prova', 'Prova', 'exemplo'], ['cham', 'Chamada', 'ação']]
   return (
     <>
@@ -189,9 +197,10 @@ function Roteiros({ m }) {
           {!r.titulo && !r.gancho && !r.prob && <Exemplo onFill={() => { const n = [...rs]; n[i] = { ...EX_ROTEIRO, ...Object.fromEntries(Object.entries(r).filter(([, v]) => v)) }; set(n) }}>Ver um roteiro de exemplo</Exemplo>}
           <div className="g3 tight">
             <select className="in sel" value={r.fmt || ''} onChange={(e) => upd(i, 'fmt', e.target.value)}>{FORMATOS.map((o) => <option key={o} value={o}>{o || 'formato'}</option>)}</select>
-            <input className="in" placeholder="Data de postagem" value={r.data || ''} onChange={(e) => upd(i, 'data', e.target.value)} />
+            <input className="in" type={/^\d{4}-\d{2}-\d{2}$/.test(r.data || '') || !r.data ? 'date' : 'text'} aria-label="Data de postagem" title="Data de postagem: o roteiro entra sozinho no editorial" value={r.data || ''} onChange={(e) => upd(i, 'data', e.target.value)} />
             <select className="in sel" value={r.status || ''} onChange={(e) => upd(i, 'status', e.target.value)}>{['', 'Ideia', 'Roteirizado', 'Gravado', 'Editado', 'Postado'].map((o) => <option key={o} value={o}>{o || 'status'}</option>)}</select>
           </div>
+          {(() => { const dt = lerData(r.data); return dt ? <p className="mut sm rt-ed"><Ic n="cal" s={13} /> No editorial: dia {String(dt.dia).padStart(2, '0')}/{String(dt.mes).padStart(2, '0')}{r.status === 'Postado' ? ' · marcado como postado ✓' : ['Gravado', 'Editado'].includes(r.status) ? ' · marcado como gravado' : ''}</p> : r.titulo ? <p className="mut sm rt-ed">Escolha a data de postagem e o roteiro entra sozinho no editorial.</p> : null })()}
           <div className="g3 tight">{[['quem', 'Para quem?'], ['dor', 'Qual a dor?'], ['faz', 'O que ela sente e faz?']].map(([k, l]) => <input key={k} className="in" placeholder={l} value={r[k] || ''} onChange={(e) => upd(i, k, e.target.value)} />)}</div>
           {partes.map(([k, l, s]) => (
             <div className="rt-r" key={k}><div className="rt-l"><b>{l}</b><span>{s}</span></div><textarea className="in ta" rows={2} value={r[k] || ''} onChange={(e) => upd(i, k, e.target.value)} /></div>
@@ -217,16 +226,20 @@ function Analise({ m }) {
   const ano = useAno(); const YEAR = ano; const DATAS = datasDoAno(ano)
   const d = useEntry(`${m.k}.an`); const ed = useEntry(`${m.k}.ed`)
   let postados = 0; for (let i = 1; i <= diasDoMes(m.n, ano); i++) if (ed[`${i}.post`]) postados++
+  const s = mesStats(m.k)
   return (
     <>
+      <Leitura m={m} s={s} d={d} />
       <div className="an">{ANALISE.map(([k, l]) => {
-        const meta = num(d[`${k}.meta`]), real = num(d[`${k}.real`]); const pct = meta ? Math.round(real / meta * 100) : null
+        const auto = k === 'pub' ? s.pub : k === 'con' ? s.con : null
+        const vazio = d[`${k}.real`] === undefined || d[`${k}.real`] === ''
+        const meta = num(d[`${k}.meta`]), real = vazio && auto != null ? auto : num(d[`${k}.real`]); const pct = meta ? Math.round(real / meta * 100) : null
         return (
           <div className="an-r card" key={k}>
             <div className="an-h"><b>{l}</b>{pct != null && <span className={'pct ' + (pct >= 100 ? 'ok' : pct >= 60 ? 'mid' : 'low')}>{pct}%</span>}</div>
-            <div className="an-n"><label>Meta<N f={`${k}.meta`} /></label><label>Real<N f={`${k}.real`} /></label></div>
+            <div className="an-n"><label>Meta<N f={`${k}.meta`} ph="–" /></label><label>Real<N f={`${k}.real`} ph={auto != null && auto > 0 ? String(auto) : '–'} /></label></div>
+            {vazio && auto > 0 && <p className="mut sm">{k === 'pub' ? `${auto} postados no editorial` : `${auto} no Negócio do mês`} (automático)</p>}
             {pct != null && <div className="prog"><i style={{ width: Math.min(100, pct) + '%', background: m.cor }} /></div>}
-            {k === 'pub' && postados > 0 && <button className="link sm" onClick={() => setField(`${m.k}.an`, 'pub.real', String(postados))}>Usar {postados} postados do editorial</button>}
             <T f={`${k}.diz`} ph="O que isso me diz" />
           </div>
         )
@@ -304,6 +317,7 @@ function Negocio({ m }) {
       <Card title="Propostas" icon="send" color={m.cor} fold aberto={props.length > 0} id="neg-props" resumo={props.length ? `${props.length} · ${fech} ${fech === 1 ? 'fechada' : 'fechadas'}` : ''}>
         {props.length > 0 && <div className="kv"><span>{props.length} {props.length === 1 ? 'enviada' : 'enviadas'} · {fech} {fech === 1 ? 'fechada' : 'fechadas'}{decid ? ` · taxa de fechamento ${Math.round(fech / decid * 100)}%` : ''}</span>{emNeg > 0 && <b>{brl(emNeg)} em negociação</b>}</div>}
         <Rows f="props" min={2} add="Adicionar proposta" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'env', l: 'Enviada em', t: 'date', w: '140px' }, { k: 'st', l: 'Status', t: 'select', opts: STATUS_PROP, w: '130px' }]} />
+        {lista(neg.props).map((pp, j) => pp.st === 'Fechada' && !pp.contr ? <div key={j} className="liga"><span><b>{pp.cli || 'Proposta'}</b> fechou{num(pp.val) ? ` · ${brl(num(pp.val))}` : ''}</span><button className="btn sm" onClick={() => { const n = [...lista(neg.props)]; n[j] = { ...n[j], contr: true }; setField(k, 'props', n); const ct = [...lista(neg.contratos).filter((r) => Object.values(r).some(Boolean)), { cli: pp.cli || '', srv: '', val: pp.val || '', venc: '', pago: false, rep: false }]; setField(k, 'contratos', ct); toast('Contrato criado em Contratos e entradas') }}>Virar contrato</button></div> : null)}
         {!props.length && <Exemplo onFill={() => setField(k, 'props', [{ cli: 'Studio Fit (exemplo)', val: '900', env: new Date().toISOString().slice(0, 10), st: 'Enviada' }])}>Ver um exemplo de proposta</Exemplo>}
         {neg.propostas && <Field label="Anotações antigas"><A f="propostas" /></Field>}
       </Card>
@@ -326,5 +340,38 @@ export function ReceberLista({ itens, comMes }) {
         </div>
       )
     })}</div>
+  )
+}
+
+// Leitura do mês: o funil do post ao contrato e o que repetir no mês seguinte (só com os números da pessoa)
+function Leitura({ m, s, d }) {
+  const ano = useAno(); const vis = mesesDoAno(ano); const ant = vis[vis.indexOf(m) - 1]
+  const pa = ant ? mesStats(ant.k) : null
+  const funil = [['Posts', s.pub], ['Mensagens', s.msg], ['Propostas', s.props], ['Contratos', s.con]]
+  const max = Math.max(...funil.map(([, v]) => v))
+  const dicas = []
+  const top = Array.isArray(d.top) ? d.top.filter((r) => r.cont) : []
+  const fm = {}; top.forEach((r) => { if (r.fmt) fm[r.fmt] = (fm[r.fmt] || 0) + 1 })
+  const melhor = Object.entries(fm).sort((a, b) => b[1] - a[1])[0]
+  if (melhor && melhor[1] >= 2) dicas.push(['ok', `Faça mais disso: ${melhor[0]} foi o formato de ${melhor[1]} dos seus ${top.length} melhores conteúdos.`])
+  else if (top[0]?.pq) dicas.push(['ok', `Repita o que funcionou em “${top[0].cont}”: ${top[0].pq}`])
+  if (pa) {
+    const comp = [['alc', 'alcance', num(d['alc.real']), pa.alc], ['seg', 'seguidores novos', s.seg, pa.seg], ['msg', 'mensagens', s.msg, pa.msg], ['con', 'contratos', s.con, pa.con]]
+      .filter(([, , a, b]) => a > 0 && b > 0).map(([k, l, a, b]) => [l, Math.round((a - b) / b * 100)])
+    const sobe = comp.filter(([, p]) => p >= 20).sort((a, b) => b[1] - a[1])[0]
+    const cai = comp.filter(([, p]) => p <= -20).sort((a, b) => a[1] - b[1])[0]
+    if (sobe) dicas.push(['ok', `${sobe[0].charAt(0).toUpperCase() + sobe[0].slice(1)} subiram ${sobe[1]}% em relação a ${ant.nome.toLowerCase()}. Veja o que você fez diferente e repita.`])
+    if (cai) dicas.push(['mid', `${cai[0].charAt(0).toUpperCase() + cai[0].slice(1)} caíram ${Math.abs(cai[1])}% em relação a ${ant.nome.toLowerCase()}. Volte nos posts desse mês para entender.`])
+  }
+  if (s.pub >= 8 && s.msg < s.pub * 0.3) dicas.push(['mid', 'Muito post e pouca conversa: termine os conteúdos com um convite claro para o direct ou o WhatsApp.'])
+  if (s.msg >= 3 && s.props === 0) dicas.push(['mid', 'Gente chamou, mas nenhuma proposta saiu: responda as conversas com uma proposta simples e com preço.'])
+  if (s.props >= 3 && s.con / s.props < 0.3) dicas.push(['mid', 'Muitas propostas e poucas fechadas: faça follow-up em 2 dias e confira o preço na calculadora.'])
+  if (!dicas.length && max === 0) return null
+  return (
+    <Card title="Leitura do mês" icon="spark" color={m.cor}>
+      {max > 0 && <div className="funil"><small>do post ao contrato</small>{funil.map(([l, v]) => <div key={l} className="fn-r"><span>{l}</span><div className="fn-b"><i style={{ width: (max ? v / max * 100 : 0) + '%', background: m.cor }} /></div><b>{v}</b></div>)}</div>}
+      {dicas.slice(0, 3).map(([t, x], i) => <p key={i} className={'dica ' + t}>{x}</p>)}
+      {!dicas.length && <p className="mut sm">Preencha mensagens, alcance e os 3 melhores conteúdos para ver aqui o que repetir no mês seguinte.</p>}
+    </Card>
   )
 }

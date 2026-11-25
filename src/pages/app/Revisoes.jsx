@@ -2,7 +2,9 @@ import { Link, useParams } from 'react-router-dom'
 import { Ic, Head, Card, Rows, Entry, A, T, N, Field, Stat, useF } from '../../components/ui'
 import { MESES as TODOS, foco, mesesDoAno, AREAS, FORMATOS } from '../../data/content'
 const MESES = TODOS
-import { useEntry, num, brl, int, useStoreVersion, useAno } from '../../lib/store'
+import { useEntry, num, brl, int, useStoreVersion, useAno, setField } from '../../lib/store'
+import { mesDeHoje, proximoDiaLivre } from '../../lib/ligacoes'
+import { toast } from '../../components/ui'
 import { mesStats, anoStats } from '../../lib/calc'
 
 export function Semestre() {
@@ -47,13 +49,13 @@ export function Fim() {
   const hoje = useEntry('hoje'); const d = useEntry('fim')
   return (
     <Entry k="fim"><div className="page">
-      <Head icon="trophy" title={`Fechando ${ano}`} sub="A nota de janeiro vem sozinha de “Onde estou hoje”" kicker="revisão" color="var(--orange)" back="/app/meses" />
+      <Head icon="trophy" title={`Fechando ${ano}`} sub="A nota do início vem sozinha de “Onde estou hoje”. Dê a nota de agora e compare." kicker="revisão" color="var(--orange)" back="/app/meses" />
       <Card title="Evolução por área" icon="chart" color="var(--orange)">
         {AREAS.map(([k, l]) => {
           const a = hoje[`${k}.nota`], b = d[`${k}.dez`]; const dif = a !== undefined && a !== '' && b !== undefined && b !== '' ? num(b) - num(a) : null
           return (
             <div className="evo" key={k}><b>{l}</b>
-              <div className="evo-n"><span className="mut">jan</span><span className="nota">{a === undefined || a === '' ? '–' : a}</span><Ic n="right" s={14} /><span className="mut">dez</span><N f={`${k}.dez`} />
+              <div className="evo-n"><span className="mut">início</span><span className="nota">{a === undefined || a === '' ? '–' : a}</span><Ic n="right" s={14} /><span className="mut">agora</span><N f={`${k}.dez`} ph="–" />
                 {dif != null && <span className={'pct ' + (dif > 0 ? 'ok' : dif < 0 ? 'low' : 'mid')}>{dif > 0 ? '+' : ''}{dif}</span>}</div>
               <T f={`${k}.mudou`} ph="O que mudou" />
             </div>
@@ -95,6 +97,7 @@ export function Ideias() {
     <Entry k="ideias"><div className="page">
       <Head icon="idea" title="Ideias soltas" sub="Ganchos, pautas e frases que aparecem fora de hora" kicker="salvos" color="#F59E0B" back="/app" />
       <Card><Rows f="lista" min={5} add="Nova ideia" cols={[{ k: 'ideia', l: 'Ideia / gancho', w: '1.6fr' }, { k: 'quem', l: 'Para quem / qual dor', w: '1.2fr' }, { k: 'fmt', l: 'Formato', t: 'select', opts: FORMATOS, w: '104px' }, { k: 'ok', l: 'Usei', t: 'check', w: '40px' }]} /></Card>
+      <Planejar />
     </div></Entry>
   )
 }
@@ -104,5 +107,26 @@ export function Notas() {
       <Head icon="note" title="Notas" sub="Escreva livre" kicker="livre" color="#3B82F6" back="/app" />
       <Card><A f="txt" rows={18} ph="Comece a escrever…" /></Card>
     </div></Entry>
+  )
+}
+
+// ideia solta vai para o próximo dia livre do calendário editorial
+function Planejar() {
+  const d = useEntry('ideias')
+  const ls = (Array.isArray(d.lista) ? d.lista : []).map((r, i) => ({ ...r, i })).filter((r) => r.ideia && !r.ok)
+  if (!ls.length) return null
+  const planejar = (r) => {
+    const m = mesDeHoje(); const dia = proximoDiaLivre(m)
+    if (!dia) { toast(`O editorial de ${m.nome} já está cheio`); return }
+    const k = `${m.k}.ed`
+    setField(k, `${dia}.ideia`, r.ideia); if (r.fmt) setField(k, `${dia}.fmt`, r.fmt); if (r.quem) setField(k, `${dia}.dor`, r.quem)
+    const l = [...d.lista]; l[r.i] = { ...l[r.i], ok: true }; setField('ideias', 'lista', l)
+    toast(`Planejada para ${String(dia).padStart(2, '0')}/${String(m.n).padStart(2, '0')} no editorial`)
+  }
+  return (
+    <Card title="Levar para o calendário" icon="cal" color="#F59E0B">
+      <p className="mut sm">Toque em “planejar” e a ideia vai para o próximo dia livre do calendário editorial.</p>
+      <div className="vg">{ls.map((r) => <div key={r.i} className="vg-r"><span>{r.ideia}</span><button className="btn sm" onClick={() => planejar(r)}>Planejar <Ic n="right" s={13} /></button></div>)}</div>
+    </Card>
   )
 }

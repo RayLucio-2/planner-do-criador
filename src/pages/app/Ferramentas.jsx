@@ -1,9 +1,12 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Ic, Head, Card, Checklist, Rows, Entry, Tip, A, T, N, C, Field, Calc, useF, sumRows, Exemplo } from '../../components/ui'
 import { AREAS, METAS_AREAS, MESES, mesesDoAno, datasDoAno, diasDoMes } from '../../data/content'
-import { useEntry, num, brl, useStoreVersion, useAno, setField } from '../../lib/store'
+import { NICHOS, NICHO, PAUTA_GERAL } from '../../data/nichos'
+import { useEntry, num, brl, useStoreVersion, useAno, setField, getEntry } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
 import { useBloqueio, Bloqueado } from '../../lib/bloqueio'
+import { mesDeHoje, novoRoteiro, novoContrato } from '../../lib/ligacoes'
+import { toast } from '../../components/ui'
 
 export const fmtAno = (t, ano) => t.replace('{ano}', ano).replace('{ant}', ano - 1)
 export const TOOLS = [
@@ -16,6 +19,7 @@ export const TOOLS = [
   ['escada', 'Escada de equipamento', 'Cada degrau pago por um contrato: luz, microfone, câmera', 'stair', Escada],
   ['google', 'Checklist do Google Meu Negócio', 'Montar uma vez, cuidar todo mês', 'globe', Google],
   ['panfleto', 'Rascunho do meu panfleto', 'Escreva para uma dor real. Não copie, compreenda.', 'flyer', Panfleto],
+  ['ganchos', 'Ganchos e roteiros prontos', 'Modelos por nicho para não travar na página em branco', 'pen', Ganchos],
   ['porta', 'Porta em porta', 'Registro de visitas e conversas', 'door', Porta],
   ['calendario', 'Calendário {ano}', 'Feriados, datas para conteúdo e datas do seu nicho', 'cal', Calendario],
   ['preco', 'Calculadora de preço', 'Quanto cobrar por hora e por pacote sem trabalhar no prejuízo', 'coin', Preco],
@@ -121,7 +125,27 @@ function Linguagem() {
     <>
       <Tip k="Dica">cada frase pode virar gancho, título ou panfleto. Marque “usei” quando virar conteúdo.</Tip>
       <Card><Rows f="frases" min={5} add="Adicionar frase" cols={[{ k: 'frase', l: 'Frase que ouvi ou li', w: '2fr' }, { k: 'onde', l: 'Onde', t: 'select', opts: ['', 'Comentário', 'Direct', 'WhatsApp', 'Google', 'Porta em porta', 'Grupo/fórum', 'Conversa'] }, { k: 'ideia', l: 'Ideia de conteúdo', w: '1.6fr' }, { k: 'usei', l: 'Usei', t: 'check', w: '44px' }]} /></Card>
+      <ViraGancho />
     </>
+  )
+}
+
+// cada frase do público vira um roteiro com o gancho pronto
+function ViraGancho() {
+  const d = useEntry('linguagem'); const nav = useNavigate()
+  const fr = (Array.isArray(d.frases) ? d.frases : []).map((r, i) => ({ ...r, i })).filter((r) => r.frase && !r.usei)
+  if (!fr.length) return null
+  const usar = (r) => {
+    const m = mesDeHoje()
+    const n = novoRoteiro(m.k, { titulo: r.ideia || r.frase, gancho: r.frase, dor: r.frase })
+    const l = [...d.frases]; l[r.i] = { ...l[r.i], usei: true }; setField('linguagem', 'frases', l)
+    toast(`Roteiro #${n} criado em ${m.nome}`); nav(`/app/mes/${m.k}/roteiros`)
+  }
+  return (
+    <Card title="Transformar em conteúdo" icon="pen" color="var(--pink)">
+      <p className="mut sm">Toque em “usar como gancho” e a frase vira um roteiro novo no mês, já com o gancho escrito.</p>
+      <div className="vg">{fr.map((r) => <div key={r.i} className="vg-r"><span>“{r.frase}”</span><button className="btn sm" onClick={() => usar(r)}>Usar como gancho <Ic n="right" s={13} /></button></div>)}</div>
+    </Card>
   )
 }
 
@@ -218,6 +242,8 @@ function Porta() {
     <>
       <div className="stats"><div className="stat"><span>Visitas</span><b>{rows.filter((r) => r.local || r.pessoa).length}</b></div><div className="stat" style={{ '--c': '#10B981' }}><span>Fecharam</span><b>{c('Fechou')}</b></div><div className="stat" style={{ '--c': '#F59E0B' }}><span>Voltar</span><b>{c('Voltar')}</b></div><div className="stat" style={{ '--c': '#E11D48' }}><span>Não agora</span><b>{c('Não agora')}</b></div></div>
       <Card><Rows f="visitas" min={6} add="Registrar visita" cols={[{ k: 'data', l: 'Data', w: '84px' }, { k: 'local', l: 'Local' }, { k: 'pessoa', l: 'Pessoa / contato' }, { k: 'dor', l: 'Dor que percebi', w: '1.5fr' }, { k: 'ret', l: 'Retorno em', w: '90px' }, { k: 'res', l: 'Resultado', t: 'select', opts: ['', 'Fechou', 'Voltar', 'Não agora'], w: '110px' }]} /></Card>
+      {rows.map((r, i) => r.res === 'Fechou' && !r.contr ? <div key={i} className="liga"><span><b>{r.local || r.pessoa || 'Visita'}</b> fechou</span><button className="btn sm" onClick={() => { const n = [...rows]; n[i] = { ...n[i], contr: true }; setField('porta', 'visitas', n); const m = novoContrato({ cli: r.local || r.pessoa || '' }); toast(`Contrato criado em ${m.nome} › Negócio`) }}>Criar contrato no Negócio</button></div> : null)}
+      {rows.filter((r) => r.res === 'Voltar' && r.ret).length > 0 && <Card title="Retornos marcados" icon="bell" color="#F59E0B">{rows.filter((r) => r.res === 'Voltar' && r.ret).map((r, i) => <div key={i} className="kv"><span>{r.local || r.pessoa}</span><b>{r.ret}</b></div>)}</Card>}
       <Tip k="Lembrete">anote o motivo do “não agora”: ele vira conteúdo.</Tip>
     </>
   )
@@ -235,7 +261,8 @@ function Calendario() {
         <Card title="Feriados nacionais" color="#E11D48"><ul className="dl">{fer.map(([k, v]) => <li key={k}><b>{fmt(k)}</b>{v[0]}</li>)}</ul><p className="mut sm">* ponto facultativo</p></Card>
         <Card title="Datas para conteúdo" color="var(--violet)"><ul className="dl">{cont.map(([k, v]) => <li key={k}><b>{fmt(k)}</b>{v[0]}</li>)}</ul></Card>
       </div>
-      <Card><Field label="Datas do meu nicho (eventos, feiras, datas do meu público)"><A f="nicho" rows={3} /></Field></Card>
+      <DatasNicho />
+      <Card><Field label="Outras datas do meu nicho (eventos, feiras, datas do meu público)"><A f="nicho" rows={3} /></Field></Card>
     </>
   )
 }
@@ -283,5 +310,49 @@ function Preco() {
         ) })}</div>}
       </Card>
     </>
+  )
+}
+
+// escolha do nicho (vale para os ganchos e o calendário)
+function NichoSel() {
+  const capa = useEntry('capa')
+  return <div className="ob-chips nsel">{NICHOS.map((n) => <button key={n.id} className={'chipb' + (capa.nicho === n.id ? ' on' : '')} onClick={() => setField('capa', 'nicho', n.id)}>{n.nome}</button>)}</div>
+}
+
+function Ganchos() {
+  const capa = useEntry('capa'); const nav = useNavigate()
+  const n = NICHO[capa.nicho]
+  const usar = ([g, fmt, ideia]) => { const m = mesDeHoje(); const i = novoRoteiro(m.k, { titulo: ideia, gancho: g, fmt }); toast(`Roteiro #${i} criado em ${m.nome}`); nav(`/app/mes/${m.k}/roteiros`) }
+  return (
+    <>
+      <Card title="Qual é o seu nicho?" icon="users" color="var(--violet)"><NichoSel /></Card>
+      {n ? <Card title={`Ganchos para ${n.nome.toLowerCase()}`} icon="pen" color="var(--pink)">
+        <p className="mut sm">Toque em “usar” e o gancho vira um roteiro novo no mês, com a ideia do vídeo. Troque as palavras pelas do seu público.</p>
+        <div className="vg">{n.ganchos.map((x) => <div key={x[0]} className="vg-r gch"><div><b>“{x[0]}”</b><span>{x[2]} · {x[1]}</span></div><button className="btn sm" onClick={() => usar(x)}>Usar <Ic n="right" s={13} /></button></div>)}</div>
+      </Card> : <p className="mut">Escolha o seu nicho acima para ver os ganchos.</p>}
+    </>
+  )
+}
+
+// datas comerciais e do nicho, com sugestão de pauta e botão para planejar no editorial
+function DatasNicho() {
+  const capa = useEntry('capa'); const ano = useAno(); const DATAS = datasDoAno(ano); const vis = mesesDoAno(ano)
+  const n = NICHO[capa.nicho]; const h = new Date()
+  const lista = []
+  Object.entries(DATAS).forEach(([k, [nome, t]]) => { if (t !== 'data') return; const [mm, dd] = k.split('-').map(Number); nome.split(' · ').forEach((x) => lista.push([mm, dd, x])) })
+  if (n) n.datas.forEach(([mm, dd, nome]) => { if (!lista.some((x) => x[2] === nome)) lista.push([mm, dd, nome]) })
+  const futuras = lista.filter(([mm, dd]) => vis.some((m) => m.n === mm) && (ano > h.getFullYear() || mm > h.getMonth() + 1 || (mm === h.getMonth() + 1 && dd >= h.getDate()))).sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  const planejar = ([mm, dd, nome], pauta) => {
+    const m = MESES[mm - 1]; const k = `${m.k}.ed`; const ed = getEntry(k)
+    if (ed[`${dd}.ideia`]) { toast(`O dia ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')} já tem post planejado`); return }
+    setField(k, `${dd}.ideia`, `${nome}: ${pauta}`); toast(`Planejado para ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')} no editorial`)
+  }
+  return (
+    <Card title="Datas do seu nicho com pauta" icon="cal" color="var(--pink)">
+      <NichoSel />
+      {futuras.length ? <div className="vg">{futuras.map((x) => { const pauta = (n && n.pautas[x[2]]) || PAUTA_GERAL[x[2]] || 'Conteúdo ligado à data e ao seu público.'; return (
+        <div key={x.join('-')} className="vg-r gch"><div><b>{String(x[1]).padStart(2, '0')}/{String(x[0]).padStart(2, '0')} · {x[2]}</b><span>{pauta}</span></div><button className="btn sm" onClick={() => planejar(x, pauta)}>Planejar</button></div>
+      ) })}</div> : <p className="mut sm">Sem datas comerciais pela frente neste ano.</p>}
+    </Card>
   )
 }

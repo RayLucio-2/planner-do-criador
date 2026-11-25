@@ -18,13 +18,16 @@ export function mesStats(m) {
     if (ed[`${d}.ideia`]) planejados++
   }
   return {
-    pub: num(an['pub.real']), alc: num(an['alc.real']), seg: num(an['seg.real']), con: num(an['con.real']),
+    // se a pessoa não digitou, usa o que já está registrado: postados do Editorial e contratos do Negócio
+    pub: an['pub.real'] !== undefined && an['pub.real'] !== '' ? num(an['pub.real']) : postados, alc: num(an['alc.real']), seg: num(an['seg.real']),
+    con: an['con.real'] !== undefined && an['con.real'] !== '' ? num(an['con.real']) : (Array.isArray(neg.contratos) ? neg.contratos.filter((r) => r.cli || num(r.val)).length : 0),
+    msg: num(an['msg.real']), props: Array.isArray(neg.props) ? neg.props.filter((p) => p.cli || num(p.val)).length : 0,
     ent, rec, gas, cx, pro, res, meta, arec: ent - rec, sob: ent - gas - cx - num(neg.parc) - pro - res,
     panf: num(v['pro.panf']), conv: num(v['pro.conv']), postados, gravados, planejados,
   }
 }
 export function anoStats(meses = mesesDoAno(getAno()).map((m) => m.k)) {
-  const t = { pub: 0, alc: 0, seg: 0, con: 0, ent: 0, rec: 0, gas: 0, pro: 0, res: 0, cx: 0, sob: 0, panf: 0, conv: 0, postados: 0 }
+  const t = { pub: 0, alc: 0, seg: 0, con: 0, ent: 0, rec: 0, gas: 0, pro: 0, res: 0, cx: 0, sob: 0, panf: 0, conv: 0, postados: 0, msg: 0, props: 0 }
   for (const m of meses) { const s = mesStats(m); for (const k in t) t[k] += s[k] }
   return t
 }

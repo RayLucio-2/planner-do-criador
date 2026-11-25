@@ -87,6 +87,9 @@ export function semanas(n, y) {
     const fim = Math.min(last, d + (6 - wd))
     out.push([d, fim]); d = fim + 1
   }
+  // dias soltos (1 ou 2 dias no começo ou no fim do mês) entram na semana vizinha: o mês fica com 4 ou 5 semanas
+  if (out.length > 1 && out[0][1] - out[0][0] < 2) { const [a] = out.shift(); out[0] = [a, out[0][1]] }
+  if (out.length > 1 && out[out.length - 1][1] - out[out.length - 1][0] < 2) { const [, b] = out.pop(); out[out.length - 1] = [out[out.length - 1][0], b] }
   return out
 }
 
@@ -102,7 +105,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l1b', n: 1, cor: '#FF3D77', icon: 'stair', titulo: 'A ordem de agregar', sub: 'Luz, microfone e câmera, nesta ordem, cada um pago por um contrato',
+    id: 'l1b', n: 2, cor: '#FF3D77', icon: 'stair', titulo: 'A ordem de agregar', sub: 'Luz, microfone e câmera, nesta ordem, cada um pago por um contrato',
     intro: 'Depois que os primeiros trabalhos entram, a tentação é trocar tudo de uma vez. Não faça isso. Agregue em degraus, sempre com o dinheiro do trabalho e nunca com dívida maior do que o seu caixa aguenta. Eu só parcelei o iPhone 17 Pro quando os contratos que eu já tinha cobriam as parcelas.',
     blocos: [
       { tipo: 'passos', itens: [
@@ -115,7 +118,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l2a', n: 2, cor: '#8B5CF6', icon: 'pen', titulo: 'Os roteiros errados que eu fiz', sub: 'Até entender a linguagem do público e o que eu queria passar',
+    id: 'l2a', n: 3, cor: '#8B5CF6', icon: 'pen', titulo: 'Os roteiros errados que eu fiz', sub: 'Até entender a linguagem do público e o que eu queria passar',
     intro: 'Muitos dos meus primeiros roteiros estavam tecnicamente certos e não funcionavam. Eu falava do que eu achava importante, com as palavras que eu usava. O público não se via ali. A virada aconteceu quando eu parei de perguntar **“o que eu quero falar?”** e passei a perguntar **“o que essa pessoa precisa ouvir, e com que palavras ela mesma diria isso?”**',
     blocos: [
       { tipo: 'vs', a: 'Como eu escrevia', b: 'Como aprendi a escrever', itens: [
@@ -130,7 +133,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l2b', n: 2, cor: '#8B5CF6', icon: 'play', titulo: 'Estrutura de roteiro que funciona', sub: 'Antes de escrever, responda três perguntas',
+    id: 'l2b', n: 4, cor: '#8B5CF6', icon: 'play', titulo: 'Estrutura de roteiro que funciona', sub: 'Antes de escrever, responda três perguntas',
     blocos: [
       { tipo: 'cards', itens: [['Para quem?', 'Uma pessoa específica, não “todo mundo”.', '#FF3D77'], ['Qual a dor?', 'O que tira o sono dela, nas palavras dela.', '#8B5CF6'], ['O que eu quero que ela sinta e faça?', 'Uma emoção e uma ação.', '#FF7A2F']] },
       { tipo: 'timeline', itens: [['Gancho', '0 a 3 s', 'Uma frase que faz a pessoa pensar “isso é comigo”.'], ['Problema', '3 a 10 s', 'Mostre que você entende a situação dela.'], ['Virada', '10 a 40 s', 'A ideia, a dica ou a solução. Uma só.'], ['Prova', 'curta', 'Um exemplo, um antes e depois, um resultado.'], ['Chamada', 'final', 'O que a pessoa faz agora.']] },
@@ -141,7 +144,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l3', n: 3, cor: '#3B82F6', icon: 'globe', titulo: 'Google Meu Negócio', sub: 'Hoje chamado de Perfil da Empresa no Google: aparecer para quem já está procurando',
+    id: 'l3', n: 5, cor: '#3B82F6', icon: 'globe', titulo: 'Google Meu Negócio', sub: 'Hoje chamado de Perfil da Empresa no Google: aparecer para quem já está procurando',
     intro: 'Muita gente procura no Google e no Maps coisas como “produtora de vídeo perto de mim” ou “filmmaker em [sua cidade]”. **Essa pessoa já quer contratar.** Estruturar o meu perfil foi uma das coisas que mais trouxe contato sem eu precisar postar nada naquele dia. É gratuito e é um dos primeiros lugares onde o cliente confere se você é de verdade.',
     blocos: [
       { tipo: 'check', titulo: 'Estrutura básica', cor: '#3B82F6', itens: ['Criar o perfil em **google.com/business** com a conta do negócio', 'Usar o **nome real** do negócio, sem encher de palavras-chave', 'Escolher a **categoria principal** certa e as secundárias', 'Definir a **área de atendimento** (dá para ocultar o endereço se você atende em casa)', 'Horário de atendimento, telefone e WhatsApp', 'Link do Instagram, do portfólio ou do site', 'Concluir a **verificação** pedida pelo Google'] },
@@ -150,7 +153,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l4', n: 4, cor: '#FF7A2F', icon: 'flyer', titulo: 'O panfleto que traz clientes', sub: 'Como um papel bem pensado abre portas no seu bairro',
+    id: 'l4', n: 6, cor: '#FF7A2F', icon: 'flyer', titulo: 'O panfleto que traz clientes', sub: 'Como um papel bem pensado abre portas no seu bairro',
     intro: 'Panfleto ainda funciona, principalmente para quem atende negócios locais. O segredo não está no design: está em escolher um público e escrever para a dor dele. Nada de panfleto de “faço vídeos”. Um bom panfleto fala do que aquela pessoa vive. Para um personal trainer, por exemplo: ser ótimo no treino e não conseguir mostrar isso no Instagram, não ter tempo para gravar, perder aluno para quem aparece mais. Entregue pessoalmente, converse e volte depois. O resultado vem da soma: **panfleto certo + conversa olho no olho + retorno + perfil no Google** para confirmar que você existe.',
     blocos: [
       { tipo: 'numerados', titulo: 'A anatomia do panfleto', itens: [['Título com a dor', '“Você é ótimo no treino, mas o seu Instagram não mostra isso?”'], ['O que você resolve, em uma frase', '“Eu gravo e edito os seus conteúdos para você atrair mais alunos.”'], ['Três benefícios concretos', 'Sem perder tempo gravando sozinho · vídeos com cara profissional · conteúdo pensado para atrair aluno'], ['Prova', 'QR code para o portfólio, antes e depois de um perfil, um depoimento.'], ['Porta de entrada', 'Uma oferta simples para começar: uma análise do perfil ou um pacote inicial.'], ['Contato e rosto', 'Seu nome, sua foto, WhatsApp e QR code. Pessoas contratam pessoas.']] },
@@ -159,7 +162,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l5', n: 5, cor: '#10B981', icon: 'users', titulo: 'Entenda a dor, não copie ninguém', sub: 'Estudar muito é o atalho que ninguém quer pegar',
+    id: 'l5', n: 7, cor: '#10B981', icon: 'users', titulo: 'Entenda a dor, não copie ninguém', sub: 'Estudar muito é o atalho que ninguém quer pegar',
     intro: 'Copiar outro criador parece rápido, mas você copia a forma sem entender o motivo. Um panfleto que funcionou para outra pessoa não vai funcionar do mesmo jeito para você, porque o seu público, a sua cidade e o seu jeito são outros. **O que funciona em qualquer lugar é o método: descobrir as maiores dores do público e agir dentro delas.**',
     blocos: [
       { tipo: 'check', titulo: 'Onde as dores aparecem', cor: '#FF3D77', itens: ['Comentários nos perfis do seu nicho', 'Perguntas que chegam no seu direct e no WhatsApp', 'Avaliações no Google de negócios parecidos', 'As conversas de porta em porta', 'Grupos e fóruns onde o seu público conversa', 'O que os seus clientes reclamam antes de fechar'] },
@@ -169,7 +172,7 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l6', n: 6, cor: '#F59E0B', icon: 'loop', titulo: 'Leva tempo: errar, mapear, gravar', sub: 'O progresso aparece para quem registra',
+    id: 'l6', n: 8, cor: '#F59E0B', icon: 'loop', titulo: 'Leva tempo: errar, mapear, gravar', sub: 'O progresso aparece para quem registra',
     intro: 'Ninguém acerta de primeira. A diferença entre quem desiste e quem cresce é que o segundo **anota onde errou e muda uma coisa de cada vez.** É para isso que existe a “Análise do mês” em cada mês deste planner.',
     blocos: [
       { tipo: 'ciclo', itens: [['Gravar', 'com o que tem'], ['Publicar', 'no dia marcado'], ['Observar', 'números e mensagens'], ['Mapear', 'onde errou'], ['Ajustar', 'uma coisa por vez']] },
@@ -194,7 +197,7 @@ export const CARTA = [
   'Foi com esse celular que eu gravei os primeiros trabalhos. Foi com ele que eu fechei os primeiros contratos. E foi com o dinheiro desses contratos que eu comprei, parcelado, o **iPhone 17 Pro**. Não foi o equipamento que trouxe os clientes. Foram os clientes que trouxeram o equipamento.',
   'Esse é o segredo que eu queria ter ouvido no começo: **faça com o que você tem e depois agregue.** Primeiro a luz, depois o microfone, depois a câmera. Cada item novo pago pelo trabalho que você já entregou.',
   'No caminho eu errei muito: fiz e produzi coisas que não geravam resultado. Escrevi roteiros que falavam para mim, e não para quem estava assistindo. Demorei para entender a linguagem do público e para ter clareza do que eu realmente queria passar. Depois estruturei o meu Google Meu Negócio e entendi uma coisa: os avanços só vêm fazendo. São os dias em que você aparece, mesmo sem vontade, que trazem resultado. Melhorar 1% num dia não é particularmente notável, mas pode ser muito significativo a longo prazo.',
-  'Este planner junta tudo isso: as lições que eu aprendi errando e as ferramentas para você **estudar, mapear, gravar, analisar e ajustar** o seu caminho ao longo de 2027.',
+  'Este planner junta tudo isso: as lições que eu aprendi errando e as ferramentas para você **estudar, mapear, gravar, analisar e ajustar** o seu caminho ao longo de {ano}.',
   'Leva tempo. Mas cada mês que você registra aqui é um mês em que você aprende mais rápido do que eu aprendi.',
 ]
 

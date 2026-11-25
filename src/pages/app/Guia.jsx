@@ -6,11 +6,12 @@ import { useEntry, setField, useStoreVersion, getEntry } from '../../lib/store'
 
 export function GuiaIndex() {
   useStoreVersion()
-  const feitas = LICOES.filter((l) => getEntry(l.id).feita).length
+  const LS = LICOES.filter((l) => l.n)
+  const feitas = LS.filter((l) => getEntry(l.id).feita).length
   return (
     <div className="page">
       <Head icon="bulb" title="O guia" sub="As lições de quem começou só com o celular" kicker="parte 1" />
-      <div className="guia-p"><div className="kv"><span>{feitas} de {LICOES.length} lições concluídas</span><b>{Math.round(feitas / LICOES.length * 100)}%</b></div><div className="prog big"><i style={{ width: (feitas / LICOES.length * 100) + '%' }} /></div></div>
+      <div className="guia-p"><div className="kv"><span>{feitas} de {LS.length} lições concluídas</span><b>{Math.round(feitas / LS.length * 100)}%</b></div><div className="prog big"><i style={{ width: (feitas / LS.length * 100) + '%' }} /></div></div>
       <Link to="/app/carta" className="row-link"><span className="rl-n" style={{ background: 'var(--grad)' }}><Ic n="heart" s={16} /></span><div><b>Antes de começar</b><span>Uma conversa sincera sobre como eu comecei</span></div><Ic n="right" s={16} /></Link>
       {LICOES.map((l) => <LessonLink key={l.id} l={l} />)}
       <Desafio60Link />
@@ -25,7 +26,7 @@ function LessonLink({ l }) {
   return (
     <Link to={`/app/guia/${l.id}`} className="row-link" style={{ '--c': l.cor }}>
       <span className="rl-n" style={{ background: l.cor }}><Ic n={tranca ? 'lock' : l.icon} s={16} /></span>
-      <div><small>{l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'}{d.feita && <em className="feita"> · concluída ✓</em>}</small><b>{l.titulo}</b><span>{l.sub}</span>
+      <div><small>{l.n ? `lição ${l.n}` : 'desafio'}{d.feita && <em className="feita"> · concluída ✓</em>}</small><b>{l.titulo}</b><span>{l.sub}</span>
         {total > 0 && <div className="prog"><i style={{ width: `${(feitos / total) * 100}%`, background: l.cor }} /></div>}</div>
       <Ic n="right" s={16} />
     </Link>
@@ -41,7 +42,7 @@ export function Licao() {
   return (
     <Entry k={l.id}>
       <div className="page">
-        <Head icon={l.icon} title={l.titulo} sub={l.sub} kicker={l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'} color={l.cor} back="/app/guia" />
+        <Head icon={l.icon} title={l.titulo} sub={l.sub} kicker={l.n ? `lição ${l.n}` : 'desafio'} color={l.cor} back="/app/guia" />
         {l.id === 'd90' && emTeste ? <Bloqueado titulo="O desafio de 90 dias é para assinantes" texto="Os seus primeiros 90 dias, passo a passo, liberam quando a 1ª mensalidade for paga." /> : <>
         {l.intro && <p className="cap"><Md t={l.intro} /></p>}
         {l.blocos.map((b, j) => <Bloco key={j} b={b} j={j} />)}

@@ -92,12 +92,12 @@ function Indicar() {
   }
   const premiadas = (lista || []).filter((x) => x.status === 'premiada').length
   return (
-    <Card title="Indique uma amiga" icon="users" color="#10B981">
-      <p className="sm">Quando a sua amiga assinar pelo seu link e pagar a 1ª mensalidade, <b>vocês duas ganham 1 mês grátis</b>: a próxima mensalidade de cada uma não é cobrada.</p>
+    <Card title="Indique alguém" icon="users" color="#10B981">
+      <p className="sm">Quando a pessoa que você indicou assinar pelo seu link e pagar a 1ª mensalidade, <b>vocês dois ganham 1 mês grátis</b>: a próxima mensalidade de cada uma não é cobrada.</p>
       <div className="ind-l"><code>{link}</code></div>
       <button className="btn full" onClick={compartilhar}><Ic n="send" s={16} /> Compartilhar meu link</button>
       {ok && <p className="note">{ok}</p>}
-      {lista && lista.length > 0 && <div className="kv"><span>{lista.length} {lista.length === 1 ? 'amiga indicada' : 'amigas indicadas'} · {premiadas} {premiadas === 1 ? 'já assinou' : 'já assinaram'}</span>{sub?.meses_gratis > 0 && <b>{sub.meses_gratis} {sub.meses_gratis === 1 ? 'mês grátis' : 'meses grátis'} a usar</b>}</div>}
+      {lista && lista.length > 0 && <div className="kv"><span>{lista.length} {lista.length === 1 ? 'pessoa indicada' : 'pessoas indicadas'} · {premiadas} {premiadas === 1 ? 'já assinou' : 'já assinaram'}</span>{sub?.meses_gratis > 0 && <b>{sub.meses_gratis} {sub.meses_gratis === 1 ? 'mês grátis' : 'meses grátis'} a usar</b>}</div>}
     </Card>
   )
 }

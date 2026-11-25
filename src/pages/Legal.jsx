@@ -42,9 +42,9 @@ export function Termos() {
         <li><b>Direito de arrependimento:</b> por ser uma contratação pela internet, você pode desistir em até 7 dias da primeira cobrança e receber o valor de volta (art. 49 do Código de Defesa do Consumidor). Basta pedir pelo e-mail {EMAIL}.</li>
         <li>Se o preço mudar, avisamos por e-mail com pelo menos 30 dias de antecedência. A mudança vale a partir da renovação seguinte.</li>
       </ul>
-      <h3>Indique uma amiga</h3>
+      <h3>Indique alguém</h3>
       <ul>
-        <li>Quem indica e quem é indicada pelo link pessoal (em Perfil) ganham <b>1 mês grátis</b> cada quando a indicada pagar a 1ª mensalidade. O mês grátis é a próxima mensalidade, que deixa de ser cobrada.</li>
+        <li>Quem indica e quem foi indicado pelo link pessoal (em Perfil) ganham <b>1 mês grátis</b> cada quando a pessoa indicada pagar a 1ª mensalidade. O mês grátis é a próxima mensalidade, que deixa de ser cobrada.</li>
         <li>Não há limite de indicações. O benefício não vale para contas criadas pela mesma pessoa e pode ser revisto em caso de uso indevido.</li>
       </ul>
       <h3>Compra do PDF</h3>

@@ -17,7 +17,7 @@ const GRUPOS = [
     ['Como cancelo?', 'Em Perfil › Assinatura › Cancelar. Se cancelar durante o teste, não paga nada. Se já pagou, continua usando até o fim do mês pago.'],
     ['Posso pedir o dinheiro de volta?', `Sim. Você pode desistir em até 7 dias da 1ª cobrança e receber o valor de volta (art. 49 do Código de Defesa do Consumidor). Basta pedir pelo e-mail ${EMAIL}.`],
     ['Como troco o cartão?', `Responda o e-mail de cobrança do Asaas ou escreva para ${EMAIL} que mandamos o link para atualizar o cartão.`],
-    ['Como funciona a indicação?', 'Em Perfil › Indique uma amiga você copia o seu link. Quando a amiga assina por ele e paga a 1ª mensalidade, vocês duas ganham 1 mês grátis.'],
+    ['Como funciona a indicação?', 'Em Perfil › Indique alguém você copia o seu link. Quando a pessoa assina por ele e paga a 1ª mensalidade, vocês dois ganham 1 mês grátis.'],
   ] },
   { t: 'PDF do planner', i: 'download', c: '#FF7A2F', q: [
     ['Como recebo o PDF?', `Depois do pagamento (${PRECO_PDF}), o botão de download aparece na tela e o link também chega no seu e-mail. No cartão é na hora. No PIX, assim que o banco confirmar.`],
