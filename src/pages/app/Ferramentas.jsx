@@ -33,7 +33,11 @@ export function FerramentasIndex() {
       <Head icon="target" title="Ferramentas" sub="Para estudar, mapear e se organizar" kicker="parte 2" color="var(--violet)" />
       <div className="tiles">{TOOLS.map(([id, t, s, ic]) => (
         <Link key={id} to={`/app/ferramentas/${id}`} className={'tile' + (id === 'preco' && emTeste ? ' trancado' : '')}><span className="tile-i"><Ic n={id === 'preco' && emTeste ? 'lock' : ic} s={18} /></span><b>{fmtAno(t, ano)}</b><span>{s}</span></Link>
-      ))}</div>
+      ))}
+        <Link to="/app/clientes" className="tile"><span className="tile-i"><Ic n="users" s={18} /></span><b>Clientes</b><span>Do primeiro contato ao contrato, com data de retorno</span></Link>
+        <Link to="/app/referencias" className="tile"><span className="tile-i"><Ic n="play" s={18} /></span><b>Referências do nicho</b><span>Vídeos bons para estudar gancho, edição e estilo</span></Link>
+        <Link to="/app/tarefas" className="tile"><span className="tile-i"><Ic n="check" s={18} /></span><b>Tarefas</b><span>O que fazer hoje e o passo a passo</span></Link>
+      </div>
     </div>
   )
 }
@@ -245,6 +249,7 @@ function Porta() {
       {rows.map((r, i) => r.res === 'Fechou' && !r.contr ? <div key={i} className="liga"><span><b>{r.local || r.pessoa || 'Visita'}</b> fechou</span><button className="btn sm" onClick={() => { const n = [...rows]; n[i] = { ...n[i], contr: true }; setField('porta', 'visitas', n); const m = novoContrato({ cli: r.local || r.pessoa || '' }); toast(`Contrato criado em ${m.nome} › Negócio`) }}>Criar contrato no Negócio</button></div> : null)}
       {rows.filter((r) => r.res === 'Voltar' && r.ret).length > 0 && <Card title="Retornos marcados" icon="bell" color="#F59E0B">{rows.filter((r) => r.res === 'Voltar' && r.ret).map((r, i) => <div key={i} className="kv"><span>{r.local || r.pessoa}</span><b>{r.ret}</b></div>)}</Card>}
       <Tip k="Lembrete">anote o motivo do “não agora”: ele vira conteúdo.</Tip>
+      <Tip k="Novo">acompanhe cada conversa até o contrato em <Link to="/app/clientes" className="auto">Clientes</Link>, com data de retorno e lembrete.</Tip>
     </>
   )
 }

@@ -21,6 +21,9 @@ import Financeiro from './pages/app/Financeiro'
 import Busca from './pages/app/Busca'
 import Desafio60 from './pages/app/Desafio60'
 import Ajuda from './pages/Ajuda'
+import Clientes from './pages/app/Clientes'
+import Tarefas from './pages/app/Tarefas'
+import Referencias from './pages/app/Referencias'
 import LandingPdf from './pages/LandingPdf'
 import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
@@ -69,6 +72,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="financeiro" element={<Financeiro />} />
           <Route path="busca" element={<Busca />} />
           <Route path="desafio60" element={<Desafio60 />} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="tarefas" element={<Tarefas />} />
+          <Route path="referencias" element={<Referencias />} />
           <Route path="perfil" element={<Perfil />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />

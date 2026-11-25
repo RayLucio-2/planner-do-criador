@@ -3,6 +3,7 @@ import { Ic, Md, Head, Stat, Tweet } from '../../components/ui'
 import { anoFinanceiro } from '../../lib/financeiro'
 import { useBloqueio } from '../../lib/bloqueio'
 import { diaDoDesafio } from './Desafio60'
+import { retornosHoje } from './Clientes'
 import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno, LICOES, D60, semanas, diasDoMes } from '../../data/content'
 import { useEntry, useStoreVersion, brl, int, getAno, useAno, setField, getEntry, num } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
@@ -20,7 +21,7 @@ export default function Home() {
   const { mesLiberado } = useBloqueio()
   const m = mesAtual()
   const t = anoStats()
-  const stories = [['/app/guia', 'Guia', 'bulb', 'var(--pink)'], ['/app/ferramentas', 'Ferramentas', 'target', 'var(--violet)'], [`/app/mes/${m.k}`, m.nome, 'cal', m.cor],
+  const stories = [['/app/tarefas', 'Tarefas', 'check', '#8B5CF6'], ['/app/clientes', 'Clientes', 'users', '#10B981'], ['/app/guia', 'Guia', 'bulb', 'var(--pink)'], ['/app/ferramentas', 'Ferramentas', 'target', 'var(--violet)'], [`/app/mes/${m.k}`, m.nome, 'cal', m.cor],
     ['/app/financeiro', 'Financeiro', 'coin', '#10B981'], ['/app/2027', `Meu ${ano}`, 'trophy', '#8B5CF6'], ['/app/ideias', 'Ideias', 'idea', '#F59E0B'], ['/app/notas', 'Notas', 'note', '#3B82F6']]
   const hoje = new Date(); const ehAno = hoje.getFullYear() === YEAR
   const ed = useEntry(`${m.k}.ed`)
@@ -96,6 +97,7 @@ function HojeCard({ m, dia, ehAno, ed, DATAS }) {
       <div className="ch"><Ic n="cal" s={16} /><span>{ehAno ? 'Hoje' : 'Primeiro post do período'} · {String(dia).padStart(2, '0')}/{String(m.n).padStart(2, '0')}</span>{DATAS[`${m.n}-${dia}`] && <em className="chip">{DATAS[`${m.n}-${dia}`][0]}</em>}</div>
       <Tarefa m={m} dia={dia} ehAno={ehAno} ed={ed} />
       {cobrar.length > 0 && <Link to="/app/financeiro" className="hj-i warn"><Ic n="bell" s={16} /><span><b>{cobrar.length === 1 ? '1 cobrança' : `${cobrar.length} cobranças`}</b> para hoje ou atrasada{cobrar.length > 1 ? 's' : ''} · {brl(cobrar.reduce((s2, r) => s2 + num(r.val), 0))}</span><Ic n="right" s={14} /></Link>}
+      {retornosHoje().map((c) => <Link key={'r' + c.i} to="/app/clientes" className="hj-i warn"><Ic n="users" s={16} /><span><small>retorno de cliente</small> {c.nome || 'Cliente'}</span><Ic n="right" s={14} /></Link>)}
       {metas.map((k) => (
         <div key={k} className="hj-i"><button className="hj-bx" aria-label="Marcar meta como feita" onClick={() => tg(`${m.k}.visao`, `metaok${k}`, true)} /><span><small>meta do mês</small> {vis[`meta${k}`]}</span></div>
       ))}
@@ -148,6 +150,7 @@ function Tarefa({ m, dia, ehAno, ed }) {
       <div className={'tarefa' + (t.ok ? ' ok' : '')}>
         <small>{t.k}</small><b>{t.b}</b>{t.s && <span>{t.s}</span>}
         <div className="tarefa-b"><button className="btn" onClick={t.go}>{t.btn}</button>{t.extra && <button className="btn ghost" onClick={t.extra[1]}>{t.extra[0]}</button>}</div>
+        {capa.onboarded && <Link to="/app/tarefas" className="link sm tarefa-l">Ver todas as tarefas de hoje e o passo a passo <Ic n="right" s={13} /></Link>}
       </div>
       {capa.onboarded && <div className="semana">
         <div className="sem-h"><small>esta semana</small>{seq > 0 && <em>{marco ? '🔥 ' : ''}{seq} {seq === 1 ? 'dia' : 'dias'} seguidos postando</em>}</div>

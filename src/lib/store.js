@@ -20,7 +20,7 @@ let loaded = false
 // ------------------------------------------------------------------ anos
 // Páginas que valem para todos os anos (perfil, público, guia, ideias…)
 const GLOBAL = new Set(['capa', 'perfil', 'publico', 'linguagem', 'escada', 'ideias', 'notas', 'porta', 'onboarding', 'lembretes',
-  'l1a', 'l1b', 'l2a', 'l2b', 'l3', 'l4', 'l5', 'l6', 'd90', 'preco', 'd60', 'ganchos'])
+  'l1a', 'l1b', 'l2a', 'l2b', 'l3', 'l4', 'l5', 'l6', 'd90', 'preco', 'd60', 'ganchos', 'clientes', 'tarefas', 'refs'])
 const hoje = new Date().getFullYear()
 const primeiro = ANOS_BONUS[hoje] ? hoje : ANO_INICIAL
 export const ANOS = Array.from({ length: Math.max(ANO_INICIAL, hoje) + 2 - primeiro }, (_, i) => primeiro + i)

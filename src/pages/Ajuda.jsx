@@ -30,6 +30,8 @@ const GRUPOS = [
     ['Esqueci a senha', 'Na tela de entrar, toque em “Esqueci minha senha”. Chega no seu e-mail um código e um link para criar uma nova.'],
     ['Como ativo os lembretes?', 'Em Perfil › Lembretes. No iPhone, primeiro adicione o planner à Tela de Início. Nos posts do calendário, o sininho cria o lembrete no Google Agenda.'],
     ['Como importo o extrato do banco ou a fatura do cartão?', 'Abra o mês e vá na aba Negócio, no cartão “Importar extrato ou fatura”. Escolha o arquivo em OFX ou CSV (exportado no app ou site do banco; PDF não funciona). Depois marque o que quer trazer e para onde vai cada linha.'],
+    ['Onde vejo o que fazer hoje?', 'Em Tarefas (no Início, primeiro círculo). Lá aparecem as tarefas do dia, que o planner monta sozinho, o seu quadro de tarefas e o passo a passo até o primeiro contrato.'],
+    ['Como acompanho os meus clientes?', 'Em Clientes: cada pessoa passa por contato, conversa, proposta e fechado. Coloque a data de retorno para ser lembrada no dia certo. Quando fechar, crie o contrato no Negócio com um toque.'],
     ['Onde está o desafio de 60 dias?', 'No Guia, logo depois das lições. Escolha a data de início e marque cada dia feito.'],
   ] },
   { t: 'Conta e dados', i: 'user', c: '#10B981', q: [

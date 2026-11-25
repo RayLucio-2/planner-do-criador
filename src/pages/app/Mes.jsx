@@ -320,6 +320,7 @@ function Negocio({ m }) {
         {lista(neg.props).map((pp, j) => pp.st === 'Fechada' && !pp.contr ? <div key={j} className="liga"><span><b>{pp.cli || 'Proposta'}</b> fechou{num(pp.val) ? ` · ${brl(num(pp.val))}` : ''}</span><button className="btn sm" onClick={() => { const n = [...lista(neg.props)]; n[j] = { ...n[j], contr: true }; setField(k, 'props', n); const ct = [...lista(neg.contratos).filter((r) => Object.values(r).some(Boolean)), { cli: pp.cli || '', srv: '', val: pp.val || '', venc: '', pago: false, rep: false }]; setField(k, 'contratos', ct); toast('Contrato criado em Contratos e entradas') }}>Virar contrato</button></div> : null)}
         {!props.length && <Exemplo onFill={() => setField(k, 'props', [{ cli: 'Studio Fit (exemplo)', val: '900', env: new Date().toISOString().slice(0, 10), st: 'Enviada' }])}>Ver um exemplo de proposta</Exemplo>}
         {neg.propostas && <Field label="Anotações antigas"><A f="propostas" /></Field>}
+        <p className="mut sm">Quer acompanhar a conversa antes da proposta, com data de retorno? Use <Link to="/app/clientes" className="auto">Clientes</Link>.</p>
       </Card>
       <Card title="Avaliações pedidas no Google" icon="globe" color={m.cor} fold aberto={!!neg.aval} id="neg-aval"><A f="aval" /></Card>
     </>
