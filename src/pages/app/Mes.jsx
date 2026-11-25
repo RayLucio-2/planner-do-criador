@@ -4,6 +4,8 @@ import { Ic, Head, Card, Checklist, Rows, Entry, A, T, N, C, S, Field, Calc, use
 import { MESES, MES, foco, mesesDoAno, ANOS_BONUS, datasDoAno, WD, ANALISE, FORMATOS, ETAPAS, CHECK_SET, diasDoMes, semanas } from '../../data/content'
 import { useEntry, num, brl, int, setField, useStoreVersion, useAno } from '../../lib/store'
 import { mesStats } from '../../lib/calc'
+import { linkAgenda } from '../../lib/agenda'
+import ImportarExtrato from '../../components/ImportarExtrato'
 
 export function MesesIndex() {
   useStoreVersion()
@@ -125,7 +127,8 @@ function Editorial({ m }) {
                 <T f={`${dd}.ideia`} ph="Ideia / tema" />
                 <div className="ed-2"><S f={`${dd}.fmt`} opts={FORMATOS} /><T f={`${dd}.dor`} ph="Dor que responde" /></div>
               </div>
-              <div className="ed-c"><C f={`${dd}.grav`} /><span>grav</span><C f={`${dd}.post`} /><span>post</span></div>
+              <div className="ed-c"><C f={`${dd}.grav`} /><span>grav</span><C f={`${dd}.post`} /><span>post</span>
+                <a className="sino" href={linkAgenda({ ano: YEAR, mes: m.n, dia: dd, titulo: d[`${dd}.ideia`] ? `Conteúdo: ${d[`${dd}.ideia`]}` : 'Conteúdo do dia', detalhes: [d[`${dd}.fmt`] && `Formato: ${d[`${dd}.fmt`]}`, d[`${dd}.dor`] && `Dor que responde: ${d[`${dd}.dor`]}`, 'Planner do Criador: ' + location.origin + location.pathname + `#/app/mes/${m.k}/editorial`].filter(Boolean).join('\n') })} target="_blank" rel="noreferrer" aria-label={`Lembrete no Google Agenda para o dia ${dd}`} title="Lembrar no Google Agenda"><Ic n="bell" s={15} /></a></div>
             </div>
           )
         })}
@@ -237,6 +240,7 @@ function Negocio({ m }) {
   return (
     <>
       <div className="stats"><Stat icon="coin" label="Entradas" value={brl(s.ent)} color="#3B82F6" /><Stat icon="check" label="Já recebido" value={brl(s.rec)} color="#10B981" /><Stat icon="cam" label="Caixinha" value={brl(s.cx)} color="#F59E0B" /><Stat icon="spark" label="Sobrou" value={brl(s.sob)} color={s.sob < 0 ? '#E11D48' : '#8B5CF6'} /></div>
+      <ImportarExtrato m={m} />
       <Card title="Contratos e entradas" icon="coin" color={m.cor}><Rows f="contratos" min={3} add="Adicionar contrato" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'srv', l: 'Serviço', w: '1.3fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'pago', l: 'Pago', t: 'check', w: '44px' }]} /></Card>
       <div className="g2">
         <Card title="Gastos do negócio" icon="flyer" color={m.cor}><Rows f="gastos" min={3} add="Adicionar gasto" cols={[{ k: 'item', l: 'Item' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }]} /></Card>

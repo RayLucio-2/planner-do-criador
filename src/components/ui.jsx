@@ -45,6 +45,8 @@ const P = {
   scissors: <><circle cx="6" cy="6.5" r="2.8" /><circle cx="6" cy="17.5" r="2.8" /><path d="M8.3 8.2 20 18M8.3 15.8 20 6" /></>,
   lock: <><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></>,
   download: <path d="M12 4v11M7 10.5l5 5 5-5M4.5 20h15" />,
+  bell: <><path d="M6 9.5a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4s2-1.5 2-6.5" /><path d="M10 19.5a2 2 0 0 0 4 0" /></>,
+  upload: <path d="M12 16V4M7 9l5-5 5 5M4.5 15v4.5h15V15" />,
   cloud: <path d="M7 18.5h10.5a4 4 0 0 0 .6-8A6 6 0 0 0 6.6 9.3 4.6 4.6 0 0 0 7 18.5z" />,
 }
 export function Ic({ n, s = 18, w = 1.9, ...r }) {

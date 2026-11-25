@@ -99,11 +99,6 @@ export default function Perfil() {
 
       <Card title="Lembretes" icon="spark" color="var(--pink)"><Lembretes /></Card>
 
-      <Card title="Instalar como app" icon="download" color="#10B981">
-        <p className="sm"><b>Android (Chrome):</b> menu ⋮ › “Instalar app” ou “Adicionar à tela inicial”.</p>
-        <p className="sm"><b>iPhone (Safari):</b> botão compartilhar › “Adicionar à Tela de Início”.</p>
-        <InstallBtn />
-      </Card>
 
       <Card title="Backup" icon="cloud" color="#3B82F6">
         <p className="mut sm">{DEMO ? 'Na demonstração os dados ficam só neste aparelho. Baixe um backup para não perder.' : 'Seus dados já ficam salvos na sua conta. O backup é uma cópia extra.'}</p>
@@ -150,11 +145,6 @@ function Excluir() {
 
 let deferred = null
 if (typeof window !== 'undefined') window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e })
-function InstallBtn() {
-  const [ok, setOk] = useState(!!deferred)
-  if (!ok && !deferred) return null
-  return <button className="btn full" onClick={async () => { deferred.prompt(); await deferred.userChoice; deferred = null; setOk(false) }}>Instalar agora</button>
-}
 
 export function Paywall() {
   const auth = useAuth(); const st = auth.sub?.status

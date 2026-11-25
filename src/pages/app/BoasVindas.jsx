@@ -35,7 +35,7 @@ export default function BoasVindas() {
           <div className="ring big"><div><Ic n="users" s={30} /></div></div>
           <h1>Para quem você cria?</h1>
           <p className="mut">Uma pessoa específica, não “todo mundo”. Quanto mais clara, mais fácil escrever para ela.</p>
-          <A f="quem" rows={3} ph="Ex.: personal trainers de Goiânia que atendem em academia e não têm tempo de gravar" />
+          <A f="quem" rows={3} ph="Ex.: donas de pequenos negócios que querem vender mais pelo Instagram e não têm tempo de gravar" />
           <A f="maior" rows={2} ph="A maior dor dessa pessoa, numa frase" />
         </div></Entry>
       )}
