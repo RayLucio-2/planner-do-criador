@@ -14,7 +14,12 @@ const maisUmMes = (d: string) => { const x = new Date(d + 'T12:00:00-03:00'); x.
 const fimDoDia = (d: string) => new Date(String(d).slice(0, 10) + 'T23:59:59-03:00').toISOString()
 
 Deno.serve(async (req) => {
-  if (req.headers.get('asaas-access-token') !== Deno.env.get('ASAAS_WEBHOOK_TOKEN')) return new Response('não autorizado', { status: 401 })
+  const recebido = (req.headers.get('asaas-access-token') || '').trim()
+  const esperado = (Deno.env.get('ASAAS_WEBHOOK_TOKEN') || '').trim()
+  if (!esperado || recebido !== esperado) {
+    console.log('token do webhook não confere', { recebido: recebido.length, esperado: esperado.length })
+    return new Response('não autorizado', { status: 401 })
+  }
   let ev: any
   try { ev = await req.json() } catch { return ok({ ignorado: 'corpo inválido' }) }
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
