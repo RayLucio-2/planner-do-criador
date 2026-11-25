@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Ic, Card } from './ui'
 import { useEntry, setField, brl, useAno } from '../lib/store'
+import { sugerirCategoria } from '../lib/financeiro'
 
 // ------------------------------------------------------------------ leitura do arquivo
 async function lerTexto(file) {
@@ -108,7 +109,7 @@ export default function ImportarExtrato({ m }) {
   function importar() {
     const sel = lista.filter((x) => x.ok)
     const limpa = (rows) => (Array.isArray(rows) ? rows : []).filter((r) => Object.values(r).some((v) => v !== '' && v !== false && v != null))
-    const gastos = sel.filter((x) => x.gasto).map((x) => ({ item: `${p2(x.data.d)}/${p2(x.data.m)} ${x.desc}`, val: fmt(x.valor), ref: x.ref }))
+    const gastos = sel.filter((x) => x.gasto).map((x) => ({ item: `${p2(x.data.d)}/${p2(x.data.m)} ${x.desc}`, cat: sugerirCategoria(x.desc), val: fmt(x.valor), ref: x.ref }))
     const entradas = sel.filter((x) => !x.gasto).map((x) => ({ cli: x.desc, srv: tipo === 'fatura' ? 'Fatura do cartão' : 'Extrato bancário', val: fmt(x.valor), pago: true, ref: x.ref }))
     if (gastos.length) setField(k, 'gastos', [...limpa(e.gastos), ...gastos])
     if (entradas.length) setField(k, 'contratos', [...limpa(e.contratos), ...entradas])

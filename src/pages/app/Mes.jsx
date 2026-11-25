@@ -1,9 +1,10 @@
 import { Link, NavLink, useParams, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Ic, Head, Card, Checklist, Rows, Entry, A, T, N, C, S, Field, Calc, useF, Stat } from '../../components/ui'
 import { MESES, MES, foco, mesesDoAno, ANOS_BONUS, datasDoAno, WD, ANALISE, FORMATOS, ETAPAS, CHECK_SET, diasDoMes, semanas } from '../../data/content'
 import { useEntry, num, brl, int, setField, useStoreVersion, useAno } from '../../lib/store'
 import { mesStats } from '../../lib/calc'
+import { CATEGORIAS, STATUS_PROP, situacao, mesAnterior, maisUmMes, lista } from '../../lib/financeiro'
 import { linkAgenda } from '../../lib/agenda'
 import ImportarExtrato from '../../components/ImportarExtrato'
 
@@ -236,24 +237,84 @@ function Analise({ m }) {
 
 function Negocio({ m }) {
   useStoreVersion()
+  const ano = useAno()
+  const k = `${m.k}.neg`; const neg = useEntry(k)
   const s = mesStats(m.k)
+  // primeira vez no mês: traz do mês anterior o que é fixo (cliente mensal, assinaturas)
+  useEffect(() => {
+    if (Array.isArray(neg.contratos) || Array.isArray(neg.gastos) || neg.semeado) return
+    const ant = mesAnterior(m, ano)
+    const c = lista(ant.contratos).filter((r) => r.rep).map((r) => ({ ...r, pago: false, venc: maisUmMes(r.venc), ref: undefined }))
+    const g = lista(ant.gastos).filter((r) => r.rep).map((r) => ({ ...r, ref: undefined }))
+    if (c.length) setField(k, 'contratos', c)
+    if (g.length) setField(k, 'gastos', g)
+    if (c.length || g.length) setField(k, 'semeado', true)
+  }, [k])
+  const pend = lista(neg.contratos).filter((r) => !r.pago && num(r.val)).map((r) => ({ ...r, sit: situacao(r) }))
+  const cats = {}; lista(neg.gastos).forEach((r) => { if (num(r.val)) cats[r.cat || 'Sem categoria'] = (cats[r.cat || 'Sem categoria'] || 0) + num(r.val) })
+  const catL = Object.entries(cats).sort((a, b) => b[1] - a[1])
+  const props = lista(neg.props).filter((p) => p.cli || num(p.val))
+  const fech = props.filter((p) => p.st === 'Fechada').length; const decid = props.filter((p) => p.st === 'Fechada' || p.st === 'Perdida').length
+  const emNeg = props.filter((p) => p.st !== 'Fechada' && p.st !== 'Perdida').reduce((t, p) => t + num(p.val), 0)
   return (
     <>
-      <div className="stats"><Stat icon="coin" label="Entradas" value={brl(s.ent)} color="#3B82F6" /><Stat icon="check" label="Já recebido" value={brl(s.rec)} color="#10B981" /><Stat icon="cam" label="Caixinha" value={brl(s.cx)} color="#F59E0B" /><Stat icon="spark" label="Sobrou" value={brl(s.sob)} color={s.sob < 0 ? '#E11D48' : '#8B5CF6'} /></div>
+      <div className="stats"><Stat icon="coin" label="Entradas" value={brl(s.ent)} color="#3B82F6" /><Stat icon="check" label="Já recebido" value={brl(s.rec)} color="#10B981" /><Stat icon="user" label="Seu pró-labore" value={brl(s.pro)} color="#EC4899" /><Stat icon="spark" label="Sobrou no caixa" value={brl(s.sob)} color={s.sob < 0 ? '#E11D48' : '#8B5CF6'} /></div>
+      <Card title="Meta de faturamento" icon="target" color={m.cor}>
+        <div className="kv"><span>Quero faturar em {m.nome.toLowerCase()}</span><N f="meta" money /></div>
+        {s.meta > 0 && <><div className="prog big"><i style={{ width: Math.min(100, s.ent / s.meta * 100) + '%' }} /></div><p className="mut sm">{s.ent >= s.meta ? 'Meta batida! 🎉' : `${Math.round(s.ent / s.meta * 100)}% da meta · faltam ${brl(s.meta - s.ent)}`}</p></>}
+      </Card>
       <ImportarExtrato m={m} />
-      <Card title="Contratos e entradas" icon="coin" color={m.cor}><Rows f="contratos" min={3} add="Adicionar contrato" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'srv', l: 'Serviço', w: '1.3fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'pago', l: 'Pago', t: 'check', w: '44px' }]} /></Card>
+      <Card title="Contratos e entradas" icon="coin" color={m.cor}>
+        <Rows f="contratos" min={3} add="Adicionar contrato" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'srv', l: 'Serviço', w: '1.2fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'venc', l: 'Vencimento', t: 'date', w: '140px' }, { k: 'pago', l: 'Pago', t: 'check', w: '44px' }, { k: 'rep', l: 'Fixo', t: 'check', w: '44px' }]} />
+        <p className="mut sm"><b>Fixo</b> = cliente mensal: ele já aparece no mês seguinte, com o vencimento do mês seguinte.</p>
+      </Card>
+      {pend.length > 0 && <Card title={`A receber · ${brl(pend.reduce((t, r) => t + num(r.val), 0))}`} icon="bell" color="#F59E0B">
+        <ReceberLista itens={pend} />
+      </Card>}
       <div className="g2">
-        <Card title="Gastos do negócio" icon="flyer" color={m.cor}><Rows f="gastos" min={3} add="Adicionar gasto" cols={[{ k: 'item', l: 'Item' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }]} /></Card>
+        <Card title="Gastos do negócio" icon="flyer" color={m.cor}>
+          <Rows f="gastos" min={3} add="Adicionar gasto" cols={[{ k: 'item', l: 'Item' }, { k: 'cat', l: 'Categoria', t: 'select', opts: CATEGORIAS, w: '1fr' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'rep', l: 'Fixo', t: 'check', w: '44px' }]} />
+          <p className="mut sm"><b>Fixo</b> = assinatura ou conta que se repete: já aparece no mês seguinte.</p>
+        </Card>
         <Card title="Resumo do mês" icon="chart" color={m.cor}>
           <div className="kv"><span>Entradas</span><Calc value={brl(s.ent)} money /></div>
           <div className="kv sub"><span>· já recebido</span><Calc value={brl(s.rec)} money /></div>
+          <div className="kv sub"><span>· a receber</span><Calc value={brl(s.arec)} money /></div>
           <div className="kv"><span>Gastos</span><Calc value={brl(s.gas)} money /></div>
           <div className="kv"><span>Para a caixinha <Link to="/app/ferramentas/escada" className="auto">% da escada</Link></span><Calc value={brl(s.cx)} money /></div>
           <div className="kv"><span>Parcelas de equipamento</span><N f="parc" money /></div>
-          <div className="kv big"><span>Sobrou</span><Calc value={brl(s.sob)} money /></div>
+          <div className="kv"><span>Meu pró-labore <em className="auto">o seu salário</em></span><N f="prolabore" money /></div>
+          <div className="kv"><span>Reserva do negócio</span><N f="reserva" money /></div>
+          <div className="kv big"><span>Sobrou no caixa</span><Calc value={brl(s.sob)} money /></div>
+          <p className="mut sm">Pró-labore é o que você tira para você. Separar isso mostra se o trabalho está pagando as suas contas.</p>
         </Card>
       </div>
-      <div className="g2"><Card><Field label="Propostas enviadas e aguardando"><A f="propostas" /></Field></Card><Card><Field label="Avaliações pedidas no Google"><A f="aval" /></Field></Card></div>
+      {catL.length > 0 && <Card title="Para onde foi o dinheiro" icon="chart" color="#E11D48">
+        {catL.map(([c, v]) => <div key={c} className="catl"><div className="kv"><span>{c}</span><b>{brl(v)}</b></div><div className="prog"><i style={{ width: (v / catL[0][1] * 100) + '%', background: '#E11D48' }} /></div></div>)}
+      </Card>}
+      <Card title="Propostas" icon="send" color={m.cor}>
+        {props.length > 0 && <div className="kv"><span>{props.length} {props.length === 1 ? 'enviada' : 'enviadas'} · {fech} {fech === 1 ? 'fechada' : 'fechadas'}{decid ? ` · taxa de fechamento ${Math.round(fech / decid * 100)}%` : ''}</span>{emNeg > 0 && <b>{brl(emNeg)} em negociação</b>}</div>}
+        <Rows f="props" min={2} add="Adicionar proposta" cols={[{ k: 'cli', l: 'Cliente' }, { k: 'val', l: 'Valor', t: 'money', w: '110px' }, { k: 'env', l: 'Enviada em', t: 'date', w: '140px' }, { k: 'st', l: 'Status', t: 'select', opts: STATUS_PROP, w: '130px' }]} />
+        {neg.propostas && <Field label="Anotações antigas"><A f="propostas" /></Field>}
+      </Card>
+      <Card><Field label="Avaliações pedidas no Google"><A f="aval" /></Field></Card>
     </>
+  )
+}
+
+const SIT = { atrasado: ['atrasado', '#E11D48'], hoje: ['vence hoje', '#F59E0B'], 'a-vencer': ['a vencer', '#3B82F6'], 'sem-data': ['sem data', '#9CA3AF'] }
+export function ReceberLista({ itens, comMes }) {
+  return (
+    <div className="rec-l">{itens.map((r, i) => {
+      const [y, mo, d] = (r.venc || '').split('-').map(Number)
+      return (
+        <div key={i} className="rec-r">
+          <span className="rec-s" style={{ '--c': SIT[r.sit][1] }}>{SIT[r.sit][0]}</span>
+          <span className="rec-t"><b>{r.cli || 'Cliente'}</b>{r.srv && <em> · {r.srv}</em>}{comMes && r.m && <Link to={`/app/mes/${r.m.k}/negocio`} className="auto"> {r.m.nome}</Link>}</span>
+          <span className="rec-v">{r.venc && <span className="mut sm">{String(d).padStart(2, '0')}/{String(mo).padStart(2, '0')}</span>}<b>{brl(num(r.val))}</b></span>
+          {r.venc && <a className="sino" href={linkAgenda({ ano: y, mes: mo, dia: d, titulo: `Cobrar ${r.cli || 'cliente'}: ${brl(num(r.val))}`, detalhes: [r.srv && `Serviço: ${r.srv}`, 'Planner do Criador: ' + location.origin + location.pathname + '#/app/financeiro'].filter(Boolean).join('\n') })} target="_blank" rel="noreferrer" aria-label={`Lembrete de cobrança de ${r.cli || 'cliente'} no Google Agenda`} title="Lembrar de cobrar no Google Agenda"><Ic n="bell" s={15} /></a>}
+        </div>
+      )
+    })}</div>
   )
 }

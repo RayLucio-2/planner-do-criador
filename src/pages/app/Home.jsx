@@ -17,7 +17,7 @@ export default function Home() {
   const m = mesAtual()
   const t = anoStats()
   const stories = [['/app/guia', 'Guia', 'bulb', 'var(--pink)'], ['/app/ferramentas', 'Ferramentas', 'target', 'var(--violet)'], [`/app/mes/${m.k}`, m.nome, 'cal', m.cor],
-    ['/app/2027', `Meu ${ano}`, 'trophy', '#10B981'], ['/app/ideias', 'Ideias', 'idea', '#F59E0B'], ['/app/notas', 'Notas', 'note', '#3B82F6']]
+    ['/app/financeiro', 'Financeiro', 'coin', '#10B981'], ['/app/2027', `Meu ${ano}`, 'trophy', '#8B5CF6'], ['/app/ideias', 'Ideias', 'idea', '#F59E0B'], ['/app/notas', 'Notas', 'note', '#3B82F6']]
   const hoje = new Date(); const ehAno = hoje.getFullYear() === YEAR
   const ed = useEntry(`${m.k}.ed`)
   const dia = ehAno ? hoje.getDate() : 1
@@ -51,7 +51,7 @@ export default function Home() {
       <div className="stats">
         <Stat icon="play" label="Publicados no ano" value={int(t.pub)} color="#FF3D77" />
         <Stat icon="trophy" label="Contratos" value={int(t.con)} color="#10B981" />
-        <Stat icon="coin" label="Entradas" value={brl(t.ent)} color="#3B82F6" />
+        <Link to="/app/financeiro" className="stat-l"><Stat icon="coin" label="Entradas · ver financeiro" value={brl(t.ent)} color="#3B82F6" /></Link>
         <Stat icon="cam" label="Caixinha" value={brl(t.cx)} color="#F59E0B" />
       </div>
 

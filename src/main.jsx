@@ -15,6 +15,7 @@ import { Semestre, Fechamento, Fim, Ano, Ideias, Notas } from './pages/app/Revis
 import Perfil, { Paywall } from './pages/app/Perfil'
 import BoasVindas from './pages/app/BoasVindas'
 import Convite from './pages/Convite'
+import Financeiro from './pages/app/Financeiro'
 import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
 import Cookies, { RotaMedida } from './components/Cookies'
@@ -57,6 +58,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="2027" element={<Ano />} />
           <Route path="ideias" element={<Ideias />} />
           <Route path="notas" element={<Notas />} />
+          <Route path="financeiro" element={<Financeiro />} />
           <Route path="perfil" element={<Perfil />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />

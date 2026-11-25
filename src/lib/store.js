@@ -20,7 +20,7 @@ let loaded = false
 // ------------------------------------------------------------------ anos
 // Páginas que valem para todos os anos (perfil, público, guia, ideias…)
 const GLOBAL = new Set(['capa', 'perfil', 'publico', 'linguagem', 'escada', 'ideias', 'notas', 'porta', 'onboarding', 'lembretes',
-  'l1a', 'l1b', 'l2a', 'l2b', 'l3', 'l4', 'l5', 'l6', 'd90'])
+  'l1a', 'l1b', 'l2a', 'l2b', 'l3', 'l4', 'l5', 'l6', 'd90', 'preco'])
 const hoje = new Date().getFullYear()
 const primeiro = ANOS_BONUS[hoje] ? hoje : ANO_INICIAL
 export const ANOS = Array.from({ length: Math.max(ANO_INICIAL, hoje) + 2 - primeiro }, (_, i) => primeiro + i)
@@ -154,6 +154,8 @@ function subscribe(f) { subs.add(f); return () => subs.delete(f) }
 export function useStoreVersion() { return useSyncExternalStore(subscribe, () => version) }
 export function useEntry(key) { useStoreVersion(); return data[rk(key)] || {} }
 export function getEntry(key) { return data[rk(key)] || {} }
+// lê uma página de outro ano (ex.: dezembro do ano anterior)
+export function getEntryAno(key, y) { const base = key.split('.')[0]; return data[GLOBAL.has(base) || y === ANO_INICIAL ? key : `${y}:${key}`] || {} }
 export function useLoaded() { useStoreVersion(); return loaded }
 export function useStatus() { useStoreVersion(); return status }
 export function exportAll() { return JSON.stringify(data, null, 2) }

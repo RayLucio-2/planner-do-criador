@@ -550,3 +550,31 @@ html{color-scheme:light}
 .imp-t em{font-style:normal;color:var(--mut);font-size:12px}
 .imp-r b{flex:none;font-size:13.5px}
 .imp-r b.neg{color:#E11D48}.imp-r b.pos{color:#10B981}
+/* financeiro */
+.rec-l{display:flex;flex-direction:column;gap:6px}
+.rec-r{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rec-r:last-child{border-bottom:0}
+.rec-s{--c:#9CA3AF;font-size:11.5px;font-weight:700;color:#fff;background:var(--c);border-radius:999px;padding:3px 9px;flex:none}
+.rec-t{flex:1;min-width:140px;font-size:14px}
+.rec-t em{font-style:normal;color:var(--mut)}
+.rec-v{display:flex;align-items:baseline;gap:8px;flex:none}
+.rec-r .sino{margin-top:0}
+.catl{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
+.fin-atual{--c:#10B981;display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:20px;padding:16px 18px}
+.fin-k{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--c)}
+.fin-atual>b{font-family:var(--disp);font-size:28px}
+.fin-atual>b span{font-size:15px;color:var(--mut);font-weight:600}
+.fin-cta{display:flex;align-items:center;gap:4px;font-weight:700;font-size:14px;color:var(--violet)}
+.fin-bars{display:flex;align-items:flex-end;gap:6px;height:170px}
+.fin-bar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.fin-bar-c{position:relative;flex:1;width:100%;max-width:26px;display:flex;align-items:flex-end;background:var(--soft);border-radius:8px;overflow:hidden}
+.fin-bar-c i{width:100%;border-radius:8px}
+.fin-bar-c em{position:absolute;left:0;right:0;border-top:2px dashed var(--ink);opacity:.5}
+.fin-bar span{font-size:11px;color:var(--mut)}
+.stat-l{display:contents}
+button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer}
+.pac-l{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.auto.baixo{color:#E11D48}.auto.ok{color:#10B981}
+/* 6 abas na barra de baixo */
+@media(max-width:480px){.tb{padding:4px 2px;min-width:0;flex:1;font-size:10.5px}}
+@media(min-width:900px){.tabbar{width:600px}}

@@ -17,6 +17,7 @@ export const TOOLS = [
   ['panfleto', 'Rascunho do meu panfleto', 'Escreva para uma dor real. Não copie, compreenda.', 'flyer', Panfleto],
   ['porta', 'Porta em porta', 'Registro de visitas e conversas', 'door', Porta],
   ['calendario', 'Calendário {ano}', 'Feriados, datas para conteúdo e datas do seu nicho', 'cal', Calendario],
+  ['preco', 'Calculadora de preço', 'Quanto cobrar por hora e por pacote sem trabalhar no prejuízo', 'coin', Preco],
   ['datas', 'Datas para não esquecer', 'Gravações, entregas, pagamentos, eventos do seu público', 'bookmark', Datas],
 ]
 
@@ -247,4 +248,34 @@ export function MiniCal({ m }) {
 function Datas() {
   const MESES = mesesDoAno(useAno())
   return <div className="g2">{MESES.map((m) => <Card key={m.k} className="dm"><Field label={<span style={{ color: m.cor }}>{m.nome}</span>}><A f={m.k} rows={3} /></Field></Card>)}</div>
+}
+
+// Calculadora de preço: (custos do mês + quanto quero tirar) ÷ horas de trabalho, com margem e imposto
+function Preco() {
+  const d = useEntry('preco')
+  const custos = num(d.custos), salario = num(d.salario), horas = num(d.horas), margem = num(d.margem), imposto = num(d.imposto)
+  const base = horas ? (custos + salario) / horas : 0
+  const hora = imposto < 100 ? base * (1 + margem / 100) / (1 - imposto / 100) : 0
+  const pacotes = (Array.isArray(d.pacotes) ? d.pacotes : []).filter((p) => p.nome || num(p.h))
+  return (
+    <>
+      <Card title="Seus números do mês" icon="coin" color="#10B981">
+        <div className="kv"><span>Custos do trabalho por mês <em className="auto">internet, apps, transporte, parcelas</em></span><N f="custos" money /></div>
+        <div className="kv"><span>Quanto eu quero tirar para mim</span><N f="salario" money /></div>
+        <div className="kv"><span>Horas que consigo trabalhar no mês</span><N f="horas" ph="80" /></div>
+        <div className="kv"><span>Margem para crescer e imprevistos</span><N f="margem" ph="20" /><b>%</b></div>
+        <div className="kv"><span>Imposto sobre o que eu recebo <em className="auto">se tiver</em></span><N f="imposto" ph="0" /><b>%</b></div>
+      </Card>
+      <Card title="Seu preço mínimo" icon="target" color="#8B5CF6">
+        <div className="kv big"><span>Por hora</span><Calc value={brl(hora)} money /></div>
+        <p className="mut sm">{horas ? 'Abaixo desse valor você trabalha no prejuízo. Quem é iniciante pode cobrar perto dele; com portfólio e resultados, suba.' : 'Preencha as horas do mês para calcular.'}</p>
+      </Card>
+      <Card title="Meus pacotes" icon="list" color="#FF7A2F">
+        <Rows f="pacotes" min={3} add="Adicionar pacote" seed={[{ nome: 'Pacote com 4 vídeos' }, { nome: 'Gravação de 1 dia' }, { nome: 'Gestão de perfil no mês' }]} cols={[{ k: 'nome', l: 'Pacote', w: '1.6fr' }, { k: 'h', l: 'Horas de trabalho', t: 'num', w: '120px' }, { k: 'cobro', l: 'Quanto cobro hoje', t: 'money', w: '130px' }]} />
+        {pacotes.length > 0 && hora > 0 && <div className="pac-l">{pacotes.map((p, i) => { const min = num(p.h) * hora; const cobro = num(p.cobro); return (
+          <div key={i} className="kv"><span>{p.nome || `Pacote ${i + 1}`}</span><span>mínimo <b>{brl(min)}</b>{cobro > 0 && <em className={'auto ' + (cobro < min ? 'baixo' : 'ok')}>{cobro < min ? ` · você cobra ${brl(min - cobro)} a menos` : ' · preço ok'}</em>}</span></div>
+        ) })}</div>}
+      </Card>
+    </>
+  )
 }

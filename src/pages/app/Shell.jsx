@@ -6,7 +6,7 @@ import { useAuth } from '../../lib/auth'
 import { DEMO } from '../../lib/supabase'
 import { IG_URL } from '../../data/content'
 
-const TABS = [['/app', 'home', 'Início', true], ['/app/meses', 'cal', 'Meses'], ['/app/guia', 'bulb', 'Guia'], ['/app/ferramentas', 'target', 'Ferramentas'], ['/app/perfil', 'user', 'Perfil']]
+const TABS = [['/app', 'home', 'Início', true], ['/app/meses', 'cal', 'Meses'], ['/app/financeiro', 'coin', 'Financeiro'], ['/app/guia', 'bulb', 'Guia'], ['/app/ferramentas', 'target', 'Ferramentas'], ['/app/perfil', 'user', 'Perfil']]
 
 export default function Shell() {
   const st = useStatus(); const ano = useAno(); const { trialDays } = useAuth(); const loc = useLocation()

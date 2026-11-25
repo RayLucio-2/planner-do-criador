@@ -130,6 +130,7 @@ export function Rows({ f, cols, min = 3, k, add = 'Adicionar linha', seed }) {
               const val = r[c.k] ?? ''
               if (c.t === 'check') return <label key={c.k} className={'ck sm' + (val ? ' on' : '')}><input type="checkbox" checked={!!val} onChange={(e) => upd(i, c.k, e.target.checked)} /><span className="box"><Ic n="check" s={11} w={3} /></span><span className="ckl only-m">{c.l}</span></label>
               if (c.t === 'select') return <select key={c.k} className="in sel" value={val} onChange={(e) => upd(i, c.k, e.target.value)}>{c.opts.map((o) => <option key={o} value={o}>{o || c.l}</option>)}</select>
+              if (c.t === 'date') return <input key={c.k} type="date" className="in" value={val} onChange={(e) => upd(i, c.k, e.target.value)} aria-label={c.l} />
               if (c.t === 'money' || c.t === 'num') return <span key={c.k} className={'numw ' + (c.t === 'money' ? 'money' : '')}>{c.t === 'money' && <i>R$</i>}<input className="in num" inputMode="decimal" value={val} placeholder="0" onChange={(e) => upd(i, c.k, e.target.value.replace(/[^\d.,-]/g, ''))} /></span>
               return <input key={c.k} className="in" value={val} placeholder={c.ph || c.l} onChange={(e) => upd(i, c.k, e.target.value)} />
             })}
