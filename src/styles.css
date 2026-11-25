@@ -676,3 +676,21 @@ button.hj-bx{width:26px;height:26px}
 .d60-t em{font-style:normal;font-size:12px;font-weight:700;color:var(--c)}
 .d60-t .in{padding:8px 10px;font-size:13.5px;margin-top:2px}
 .d60-r.on .d60-t>span{color:var(--mut)}
+/* rodapé e central de ajuda */
+.ft-ct{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ft-mail{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;font-weight:650;color:var(--ink2);text-decoration:underline}
+.lp-legal{flex-wrap:wrap}
+.ft-aj{font-size:12.5px;font-weight:700;color:var(--ink2);text-decoration:underline}
+.aj-busca{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 12px;margin:6px 0 4px}
+.aj-busca .in{border:0;padding:12px 0;flex:1;background:transparent;outline:none}
+.aj-g{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.aj-g h2{display:flex;align-items:center;gap:10px}
+.aj-i{width:30px;height:30px;border-radius:10px;background:var(--c);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.legal .faq a,.legal .aj-bt a{text-decoration:none}
+.legal .faq details p{margin-top:8px}
+.aj-contato{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.aj-contato h2{margin-top:0}
+.aj-bt{display:flex;gap:10px;flex-wrap:wrap}
+.legal .aj-bt .btn{color:#fff}.legal .aj-bt .btn.ghost{color:var(--ink)}
+.faq summary svg{flex:none;margin-left:10px}
+.legal .lp-nav a{text-decoration:none;color:var(--ink)}

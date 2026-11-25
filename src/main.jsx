@@ -20,6 +20,7 @@ import Convite from './pages/Convite'
 import Financeiro from './pages/app/Financeiro'
 import Busca from './pages/app/Busca'
 import Desafio60 from './pages/app/Desafio60'
+import Ajuda from './pages/Ajuda'
 import LandingPdf from './pages/LandingPdf'
 import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
@@ -44,6 +45,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/pdf" element={<LandingPdf />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
+        <Route path="/ajuda" element={<Ajuda />} />
         <Route path="/boas-vindas" element={<Guard><BoasVindas /></Guard>} />
         <Route path="/entrar" element={<Entrar />} />
         <Route path="/convite" element={<Convite />} />

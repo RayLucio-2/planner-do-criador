@@ -160,12 +160,17 @@ function Depoimentos() {
   )
 }
 
+const EMAIL_CONTATO = import.meta.env.VITE_EMAIL_CONTATO || 'teloraprodutora@gmail.com'
+
 export function Rodape() {
   return (
     <footer className="lp-ft">
       <span className="brand">planner<i>.</i>do<i>.</i>criador</span>
-      <a className="igb" href={IG_URL} target="_blank" rel="noreferrer"><Ic n="at" s={14} w={2.2} /> @aritamende.s</a>
-      <span className="lp-legal"><Link to="/termos">Termos de uso</Link><Link to="/privacidade">Privacidade</Link>{ARTIFACT && !LANCADO && <Link to="/entrar">Ver o app (demonstração)</Link>}</span>
+      <div className="ft-ct">
+        <a className="igb" href={IG_URL} target="_blank" rel="noreferrer"><Ic n="at" s={14} w={2.2} /> @aritamende.s</a>
+        <a className="ft-mail" href={`mailto:${EMAIL_CONTATO}`}><Ic n="send" s={14} /> {EMAIL_CONTATO}</a>
+      </div>
+      <span className="lp-legal"><Link to="/ajuda">Central de ajuda</Link><Link to="/termos">Termos de uso</Link><Link to="/privacidade">Privacidade</Link>{ARTIFACT && !LANCADO && <Link to="/entrar">Ver o app (demonstração)</Link>}</span>
       <span className="mut sm">© 2027 Planner do Criador · <b className="telora">Télora Produtora</b></span>
     </footer>
   )

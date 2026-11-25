@@ -136,7 +136,8 @@ export default function Perfil() {
       {!DEMO && <Indicar />}
 
       <Card title="Precisa de ajuda?" icon="help" color="var(--violet)">
-        <p className="mut sm">Ficou com dúvida ou algo não funcionou? Fale com a gente, respondemos rapidinho.</p>
+        <p className="mut sm">Ficou com dúvida ou algo não funcionou? Veja a central de ajuda ou fale com a gente, respondemos rapidinho.</p>
+        <Link to="/ajuda" className="btn full"><Ic n="help" s={16} /> Central de ajuda</Link>
         <div className="g2 tight">
           {WHATS && <a className="btn ghost" href={`https://wa.me/${WHATS}?text=${encodeURIComponent('Oi! Preciso de ajuda com o Planner do Criador.')}`} target="_blank" rel="noreferrer"><Ic n="comment" s={16} /> WhatsApp</a>}
           <a className="btn ghost" href="https://ig.me/m/aritamende.s" target="_blank" rel="noreferrer"><Ic n="send" s={16} /> Direct no Instagram</a>

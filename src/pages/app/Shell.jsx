@@ -29,7 +29,7 @@ export default function Shell() {
         </div>
       </header>
       <main className="main"><Outlet /></main>
-      <footer className="app-ft"><a href={IG_URL} target="_blank" rel="noreferrer" className="igb"><Ic n="at" s={13} w={2.2} /> @aritamende.s</a><span className="telora-ft">uma criação <b>Télora Produtora</b></span></footer>
+      <footer className="app-ft"><a href={IG_URL} target="_blank" rel="noreferrer" className="igb"><Ic n="at" s={13} w={2.2} /> @aritamende.s</a><Link to="/ajuda" className="ft-aj">Ajuda</Link><span className="telora-ft">uma criação <b>Télora Produtora</b></span></footer>
       <QuickAdd />
       <Toasts />
       {!capa.tour && <Tour onFim={() => setField('capa', 'tour', true)} />}
