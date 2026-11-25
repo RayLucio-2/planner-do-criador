@@ -41,12 +41,12 @@ jobs:
         run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --yes
       - name: Publicar as funções
         run: |
-          supabase functions deploy assinatura-webhook --use-api
-          supabase functions deploy excluir-conta --use-api
-          supabase functions deploy lembretes --use-api
-          supabase functions deploy enviar-amostra --use-api
-          supabase functions deploy asaas-webhook --use-api
-          supabase functions deploy asaas-checkout --use-api
-          supabase functions deploy asaas-cancelar --use-api
-          supabase functions deploy comprar-pdf --use-api
-          supabase functions deploy baixar-pdf --use-api
+          supabase functions deploy assinatura-webhook --use-api --yes
+          supabase functions deploy excluir-conta --use-api --yes
+          supabase functions deploy lembretes --use-api --yes
+          supabase functions deploy enviar-amostra --use-api --yes
+          supabase functions deploy asaas-webhook --use-api --yes
+          supabase functions deploy asaas-checkout --use-api --yes
+          supabase functions deploy asaas-cancelar --use-api --yes
+          supabase functions deploy comprar-pdf --use-api --yes
+          supabase functions deploy baixar-pdf --use-api --yes
