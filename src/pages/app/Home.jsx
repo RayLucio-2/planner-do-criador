@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { Ic, Md, Head, Stat, Tweet } from '../../components/ui'
 import { anoFinanceiro } from '../../lib/financeiro'
 import { useBloqueio } from '../../lib/bloqueio'
-import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno, LICOES } from '../../data/content'
+import { diaDoDesafio } from './Desafio60'
+import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno, LICOES, D60 } from '../../data/content'
 import { useEntry, useStoreVersion, brl, int, getAno, useAno, setField, getEntry, num } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
 
@@ -86,6 +87,7 @@ function HojeCard({ m, dia, ehAno, ed, DATAS }) {
   const cobrar = f.aReceber.filter((r) => r.sit === 'atrasado' || r.sit === 'hoje')
   const metas = [1, 2, 3].filter((k) => vis[`meta${k}`] && !vis[`metaok${k}`])
   const prox = LICOES.find((l) => !getEntry(l.id).feita)
+  const d60 = useEntry('d60'); const { emTeste } = useBloqueio(); const dd = !emTeste ? diaDoDesafio(d60.inicio) : null; const tarefa = dd ? D60[dd - 1] : null
   const tg = (k, f2, v) => setField(k, f2, v)
   const ideia = ed[`${dia}.ideia`]
   return (
@@ -104,6 +106,7 @@ function HojeCard({ m, dia, ehAno, ed, DATAS }) {
       {metas.map((k) => (
         <div key={k} className="hj-i"><button className="hj-bx" aria-label="Marcar meta como feita" onClick={() => tg(`${m.k}.visao`, `metaok${k}`, true)} /><span><small>meta do mês</small> {vis[`meta${k}`]}</span></div>
       ))}
+      {tarefa && <Link to="/app/desafio60" className="hj-i"><Ic n="flag" s={16} /><span><small>desafio · dia {tarefa.n}{d60[`${tarefa.n}.ok`] ? ' · feito ✓' : ''}</small> {tarefa.t}</span><Ic n="right" s={14} /></Link>}
       {prox && <Link to={`/app/guia/${prox.id}`} className="hj-i"><Ic n="bulb" s={16} /><span><small>próxima lição</small> {prox.titulo}</span><Ic n="right" s={14} /></Link>}
     </section>
   )

@@ -13,6 +13,7 @@ export function GuiaIndex() {
       <div className="guia-p"><div className="kv"><span>{feitas} de {LICOES.length} lições concluídas</span><b>{Math.round(feitas / LICOES.length * 100)}%</b></div><div className="prog big"><i style={{ width: (feitas / LICOES.length * 100) + '%' }} /></div></div>
       <Link to="/app/carta" className="row-link"><span className="rl-n" style={{ background: 'var(--grad)' }}><Ic n="heart" s={16} /></span><div><b>Antes de começar</b><span>Uma conversa sincera sobre como eu comecei</span></div><Ic n="right" s={16} /></Link>
       {LICOES.map((l) => <LessonLink key={l.id} l={l} />)}
+      <Desafio60Link />
     </div>
   )
 }
@@ -80,4 +81,17 @@ function Concluir({ id }) {
   return d.feita
     ? <div className="concl on"><Ic n="check" s={18} w={3} /><b>Lição concluída</b><button className="link sm" onClick={() => setField(id, 'feita', false)}>desfazer</button></div>
     : <button className="btn big full concl-b" onClick={() => setField(id, 'feita', true)}><Ic n="check" s={18} w={3} /> Marcar lição como concluída</button>
+}
+
+function Desafio60Link() {
+  const { emTeste } = useBloqueio(); const d = useEntry('d60')
+  const feitos = Object.entries(d).filter(([k, v]) => /^\d+\.ok$/.test(k) && v).length
+  return (
+    <Link to="/app/desafio60" className="row-link" style={{ '--c': '#FF3D77' }}>
+      <span className="rl-n" style={{ background: '#FF3D77' }}><Ic n={emTeste ? 'lock' : 'flag'} s={16} /></span>
+      <div><small>desafio</small><b>Desafio de 60 dias de conteúdo</b><span>Um conteúdo por dia, do primeiro post à primeira venda</span>
+        {feitos > 0 && <div className="prog"><i style={{ width: `${(feitos / 60) * 100}%`, background: '#FF3D77' }} /></div>}</div>
+      <Ic n="right" s={16} />
+    </Link>
+  )
 }

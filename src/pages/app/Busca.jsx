@@ -15,6 +15,7 @@ function onde(chave) {
   if (base === 'ideias') return ['Ideias', '/app/ideias']
   if (base === 'notas') return ['Notas', '/app/notas']
   if (base === 'capa') return ['Perfil', '/app/perfil']
+  if (base === 'd60') return ['Desafio de 60 dias', '/app/desafio60']
   const l = LICOES.find((x) => x.id === base); if (l) return [`Guia · ${l.titulo}`, `/app/guia/${l.id}`]
   const t = TOOLS.find((x) => x[0] === base); if (t) return [`Ferramentas · ${t[1].replace('{ano}', '').replace('{ant}', '').trim()}`, `/app/ferramentas/${base}`]
   return null

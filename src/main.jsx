@@ -19,6 +19,7 @@ import BoasVindas from './pages/app/BoasVindas'
 import Convite from './pages/Convite'
 import Financeiro from './pages/app/Financeiro'
 import Busca from './pages/app/Busca'
+import Desafio60 from './pages/app/Desafio60'
 import LandingPdf from './pages/LandingPdf'
 import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
@@ -65,6 +66,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="notas" element={<Notas />} />
           <Route path="financeiro" element={<Financeiro />} />
           <Route path="busca" element={<Busca />} />
+          <Route path="desafio60" element={<Desafio60 />} />
           <Route path="perfil" element={<Perfil />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
