@@ -109,7 +109,9 @@ export default function Perfil() {
     f.text().then((t) => { try { importAll(JSON.parse(t)); setMsg('Backup importado!') } catch { setMsg('Arquivo inválido.') } })
   }
   const st = sub?.status
+  const cortesia = sub?.provider === 'cortesia'
   const statusTxt = DEMO ? 'Modo demonstração'
+    : cortesia ? (access ? `Acesso cortesia até ${dataBR(sub.current_period_end)}` : 'Seu acesso cortesia terminou')
     : st === 'active' ? `Assinatura ativa${sub.current_period_end ? ` · renova em ${dataBR(new Date(new Date(sub.current_period_end).getTime() - 864e5))}` : ''}`
     : st === 'trialing' ? `Teste grátis: ${trialDays} ${trialDays === 1 ? 'dia restante' : 'dias restantes'}${sub.trial_end ? ` · 1ª cobrança em ${dataBR(sub.trial_end)}` : ''}`
     : st === 'canceled' ? (access ? `Cancelada · você usa até ${dataBR(sub.current_period_end)}` : 'Assinatura cancelada')
@@ -126,7 +128,8 @@ export default function Perfil() {
         {!DEMO && st === 'trialing' && sub?.provider_subscription_id && !sub?.pagou_em && <><p className="mut sm">No teste grátis, os meses à frente, o financeiro avançado e o desafio de 90 dias ficam bloqueados. Quer liberar tudo agora?</p><AssinarAgora /></>}
         {sub?.preco_promo_ate && sub?.valor_apos_promo && <p className="mut sm">Seu preço promocional vale até {dataBR(sub.preco_promo_ate)}. Depois, a mensalidade passa a {Number(sub.valor_apos_promo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.</p>}
         {podeCancelar && <Cancelar />}
-        {!DEMO && (st === 'canceled' || st === 'past_due') && <Assinar teste={false} botao={st === 'past_due' ? 'Atualizar cartão e assinar' : undefined} />}
+        {!DEMO && cortesia && !access && <Assinar teste={false} />}
+        {!DEMO && !cortesia && (st === 'canceled' || st === 'past_due') && <Assinar teste={false} botao={st === 'past_due' ? 'Atualizar cartão e assinar' : undefined} />}
         {!DEMO && <button className="link sm" onClick={auth.refreshSub}>Atualizar status</button>}
       </Card>
 
