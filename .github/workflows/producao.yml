@@ -51,3 +51,4 @@ jobs:
           supabase functions deploy comprar-pdf --use-api --yes
           supabase functions deploy baixar-pdf --use-api --yes
           supabase functions deploy asaas-assinar-agora --use-api --yes
+          supabase functions deploy cortesia --use-api --yes

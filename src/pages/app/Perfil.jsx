@@ -51,6 +51,35 @@ export function Assinar({ teste = true, botao }) {
 }
 
 // Indique uma amiga: quando ela assinar e pagar a 1ª mensalidade, as duas ganham 1 mês grátis
+const ADMINS = (import.meta.env.VITE_ADMIN_EMAILS || 'rayaneborba_02@outlook.com,teloraprodutora@gmail.com').toLowerCase().split(',').map((s) => s.trim())
+
+// Só a equipe vê: libera o planner por X dias, sem cartão, e manda o e-mail de presente
+function DarCortesia() {
+  const [email, setEmail] = useState(''); const [nome, setNome] = useState(''); const [dias, setDias] = useState(90)
+  const [busy, setBusy] = useState(false); const [msg, setMsg] = useState(null)
+  async function enviar(e) {
+    e.preventDefault(); setBusy(true); setMsg(null)
+    const { data, error } = await supabase.functions.invoke('cortesia', { method: 'POST', body: { email, nome, dias: Number(dias) } })
+    setBusy(false)
+    let erro = data?.erro
+    if (error && !erro) { try { erro = (await error.context.json()).erro } catch { erro = 'Não consegui agora. Tente de novo em instantes.' } }
+    if (erro) { setMsg({ erro: true, t: erro }); return }
+    setMsg({ t: data.aviso || data.msg }); setEmail(''); setNome('')
+  }
+  return (
+    <Card title="Dar cortesia" icon="spark" color="#F59E0B">
+      <p className="mut sm">Só a equipe vê este cartão. Libera tudo pelos dias escolhidos, sem cartão, e manda um e-mail de presente. Se a pessoa ainda não tem conta, ela recebe o convite e o acesso começa quando se cadastrar.</p>
+      <form className="cort" onSubmit={enviar}>
+        <input className="in" type="email" placeholder="E-mail da pessoa" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input className="in" placeholder="Primeiro nome (para o e-mail)" value={nome} onChange={(e) => setNome(e.target.value)} />
+        <div className="kv"><span>Dias de acesso</span><select className="in" value={dias} onChange={(e) => setDias(e.target.value)}>{[30, 60, 90, 100, 180, 365].map((d) => <option key={d} value={d}>{d} dias</option>)}</select></div>
+        <button className="btn full" disabled={busy}>{busy ? 'Enviando…' : <><Ic n="send" s={16} /> Liberar e mandar o e-mail</>}</button>
+      </form>
+      {msg && <p className={'note' + (msg.erro ? ' err' : '')}>{msg.t}</p>}
+    </Card>
+  )
+}
+
 function Indicar() {
   const { user, sub } = useAuth(); const [lista, setLista] = useState(null); const [ok, setOk] = useState('')
   const codigo = (user?.id || '').slice(0, 8)
@@ -137,6 +166,7 @@ export default function Perfil() {
 
 
       {!DEMO && <Indicar />}
+      {!DEMO && ADMINS.includes((user?.email || '').toLowerCase()) && <DarCortesia />}
 
       <Card title="Precisa de ajuda?" icon="help" color="var(--violet)">
         <p className="mut sm">Ficou com dúvida ou algo não funcionou? Veja a central de ajuda ou fale com a gente, respondemos rapidinho.</p>

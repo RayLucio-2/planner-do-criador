@@ -694,3 +694,4 @@ button.hj-bx{width:26px;height:26px}
 .legal .aj-bt .btn{color:#fff}.legal .aj-bt .btn.ghost{color:var(--ink)}
 .faq summary svg{flex:none;margin-left:10px}
 .legal .lp-nav a{text-decoration:none;color:var(--ink)}
+.cort{display:flex;flex-direction:column;gap:10px}.cort select.in{max-width:150px}

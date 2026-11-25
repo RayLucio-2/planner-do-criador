@@ -30,3 +30,6 @@ verify_jwt = false   # link do e-mail; a função confere o id e o token da comp
 
 [functions.asaas-assinar-agora]
 verify_jwt = true
+
+[functions.cortesia]
+verify_jwt = true
