@@ -695,3 +695,4 @@ button.hj-bx{width:26px;height:26px}
 .faq summary svg{flex:none;margin-left:10px}
 .legal .lp-nav a{text-decoration:none;color:var(--ink)}
 .cort{display:flex;flex-direction:column;gap:10px}.cort select.in{max-width:150px}
+.excl{display:flex;justify-content:center;padding:4px 0 8px}.excl .link{display:inline-flex;gap:5px;align-items:center;color:var(--mut);font-size:12.5px}

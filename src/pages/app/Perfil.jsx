@@ -207,10 +207,11 @@ function Excluir() {
     clearLocal(); await auth.signOut()
   }
   return (
+    !abrir ? <div className="excl"><button className="link sm" onClick={() => setAbrir(true)}><Ic n="trash" s={13} /> Excluir minha conta</button></div> :
     <Card title="Excluir minha conta" icon="trash" color="#E11D48">
-      {!abrir ? <><p className="mut sm">Cancela a assinatura e apaga a sua conta e tudo o que você escreveu. Não dá para desfazer. Se quiser guardar uma cópia, baixe o backup antes.</p>
-        <button className="btn ghost full danger" onClick={() => setAbrir(true)}>Quero excluir minha conta</button></> : (
+      {(
         <>
+          <p className="mut sm">Cancela a assinatura e apaga a sua conta e tudo o que você escreveu. Não dá para desfazer. Se quiser guardar uma cópia, baixe o backup antes.</p>
           <p className="sm">Para confirmar, digite <b>EXCLUIR</b> abaixo.</p>
           <input className="in" value={txt} onChange={(e) => setTxt(e.target.value)} placeholder="EXCLUIR" />
           <div className="g2 tight"><button className="btn ghost" onClick={() => { setAbrir(false); setTxt('') }}>Cancelar</button>
