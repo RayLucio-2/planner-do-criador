@@ -3,6 +3,7 @@ import { Ic, Head, Card, Checklist, Rows, Entry, Tip, A, T, N, C, Field, Calc, u
 import { AREAS, METAS_AREAS, MESES, mesesDoAno, datasDoAno, diasDoMes } from '../../data/content'
 import { useEntry, num, brl, useStoreVersion, useAno, setField } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
+import { useBloqueio, Bloqueado } from '../../lib/bloqueio'
 
 export const fmtAno = (t, ano) => t.replace('{ano}', ano).replace('{ant}', ano - 1)
 export const TOOLS = [
@@ -22,27 +23,28 @@ export const TOOLS = [
 ]
 
 export function FerramentasIndex() {
-  const ano = useAno()
+  const ano = useAno(); const { emTeste } = useBloqueio()
   return (
     <div className="page">
       <Head icon="target" title="Ferramentas" sub="Para estudar, mapear e se organizar" kicker="parte 2" color="var(--violet)" />
       <div className="tiles">{TOOLS.map(([id, t, s, ic]) => (
-        <Link key={id} to={`/app/ferramentas/${id}`} className="tile"><span className="tile-i"><Ic n={ic} s={18} /></span><b>{fmtAno(t, ano)}</b><span>{s}</span></Link>
+        <Link key={id} to={`/app/ferramentas/${id}`} className={'tile' + (id === 'preco' && emTeste ? ' trancado' : '')}><span className="tile-i"><Ic n={id === 'preco' && emTeste ? 'lock' : ic} s={18} /></span><b>{fmtAno(t, ano)}</b><span>{s}</span></Link>
       ))}</div>
     </div>
   )
 }
 
 export function Ferramenta() {
-  const { id } = useParams(); const ano = useAno()
+  const { id } = useParams(); const ano = useAno(); const { emTeste } = useBloqueio()
   const t = TOOLS.find((x) => x[0] === id)
   if (!t) return <div className="page">Ferramenta não encontrada.</div>
   const [, title, sub, icon, Comp] = t
+  const bloq = id === 'preco' && emTeste
   return (
     <Entry k={id}>
       <div className="page">
         <Head icon={icon} title={fmtAno(title, ano)} sub={sub} kicker="ferramenta" color="var(--violet)" back="/app/ferramentas" />
-        <Comp />
+        {bloq ? <Bloqueado texto="A calculadora de preço libera quando a 1ª mensalidade for paga." /> : <Comp />}
         {id !== 'calendario' && <Card title="Anotações" icon="note"><A f="notas" rows={3} /></Card>}
       </div>
     </Entry>

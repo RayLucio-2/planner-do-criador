@@ -50,3 +50,4 @@ jobs:
           supabase functions deploy asaas-cancelar --use-api --yes
           supabase functions deploy comprar-pdf --use-api --yes
           supabase functions deploy baixar-pdf --use-api --yes
+          supabase functions deploy asaas-assinar-agora --use-api --yes

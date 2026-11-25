@@ -184,7 +184,7 @@ function LandingVendas() {
           <span className="pill">{PROMO ? `${PROMO} · ${DIAS_TESTE} dias grátis` : `${DIAS_TESTE} dias grátis · cancele quando quiser`}</span>
           <h1>Planner<br /><em>do criador</em> <span className="yr">2027</span></h1>
           <p>O app para quem quer produzir conteúdo e fechar contratos começando com o que já tem: calendário editorial, roteiros, análise do mês e negócio, com cara de rede social.</p>
-          <div className="lp-cta"><Link to="/entrar?criar=1" className="btn big" onClick={() => track('teste')}>Testar grátis por {DIAS_TESTE} dias <Ic n="right" s={16} w={2.6} /></Link><span className="mut">depois {PRECO_DE && <s>{PRECO_DE}</s>} <b>{PRECO}</b>/mês</span></div>
+          <div className="lp-cta"><Link to="/entrar?criar=1" className="btn big" onClick={() => track('teste')}>Testar grátis por {DIAS_TESTE} dias <Ic n="right" s={16} w={2.6} /></Link><span className="mut">depois {PRECO_DE && <s>{PRECO_DE}</s>} <b>{PRECO}</b>/mês{PRECO_DE && ' por 12 meses'}</span></div>
         </div>
         <div className="lp-phone">
           <div className="phn">

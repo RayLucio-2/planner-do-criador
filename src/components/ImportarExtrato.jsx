@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Ic, Card } from './ui'
 import { useEntry, setField, brl, useAno } from '../lib/store'
 import { sugerirCategoria, CATEGORIAS } from '../lib/financeiro'
+import { useBloqueio, Bloqueado } from '../lib/bloqueio'
 
 // ------------------------------------------------------------------ leitura do arquivo
 async function lerTexto(file) {
@@ -78,6 +79,12 @@ const p2 = (n) => String(n).padStart(2, '0')
 
 // ------------------------------------------------------------------ componente
 export default function ImportarExtrato({ m }) {
+  const { emTeste } = useBloqueio()
+  if (emTeste) return <Card title="Importar extrato ou fatura" icon="lock" color={m.cor} fold aberto={false} id="neg-importar" resumo="para assinantes"><Bloqueado texto="Importar o extrato e a fatura do cartão libera quando a 1ª mensalidade for paga." /></Card>
+  return <Importador m={m} />
+}
+
+function Importador({ m }) {
   const ano = useAno(); const k = `${m.k}.neg`; const e = useEntry(k)
   const [lista, setLista] = useState(null); const [msg, setMsg] = useState(null); const [tipo, setTipo] = useState('extrato')
 

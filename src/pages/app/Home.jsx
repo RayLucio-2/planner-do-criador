@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Ic, Md, Head, Stat, Tweet } from '../../components/ui'
 import { anoFinanceiro } from '../../lib/financeiro'
+import { useBloqueio } from '../../lib/bloqueio'
 import { MESES, foco, mesesDoAno, ANOS_BONUS, CARTA, datasDoAno, LICOES } from '../../data/content'
 import { useEntry, useStoreVersion, brl, int, getAno, useAno, setField, getEntry, num } from '../../lib/store'
 import { anoStats } from '../../lib/calc'
@@ -15,6 +16,7 @@ export default function Home() {
   useStoreVersion()
   const ano = useAno(); const YEAR = ano; const DATAS = datasDoAno(ano)
   const capa = useEntry('capa')
+  const { mesLiberado } = useBloqueio()
   const m = mesAtual()
   const t = anoStats()
   const stories = [['/app/guia', 'Guia', 'bulb', 'var(--pink)'], ['/app/ferramentas', 'Ferramentas', 'target', 'var(--violet)'], [`/app/mes/${m.k}`, m.nome, 'cal', m.cor],
@@ -55,7 +57,7 @@ export default function Home() {
       <h2 className="sect"><Ic n="grid" s={16} /> {ano} mês a mês</h2>
       {ANOS_BONUS[ano] && <div className="bonus"><span className="pill">bônus {ano}</span><b>{mesesDoAno(ano).map((x) => x.nome).join(' e ')} de {ano} já estão aqui</b><p>Comece agora e chegue em {ano + 1} com a rotina pronta. Troque o ano no topo quando quiser.</p></div>}
       <div className="feed">{mesesDoAno(ano).map((x) => (
-        <Link key={x.k} to={`/app/mes/${x.k}`} className="post" style={{ '--c': x.cor }}><b>{x.nome}</b><span>{foco(x.n, ano)[0]}</span><i>{String(x.n).padStart(2, '0')}</i></Link>
+        <Link key={x.k} to={`/app/mes/${x.k}`} className={'post' + (mesLiberado(x.n, ano) ? '' : ' trancado')} style={{ '--c': x.cor }}><b>{x.nome}</b><span>{foco(x.n, ano)[0]}</span><i>{mesLiberado(x.n, ano) ? String(x.n).padStart(2, '0') : <Ic n="lock" s={22} />}</i></Link>
       ))}</div>
 
       <Link to="/app/carta" className="card letter"><div className="ch"><Ic n="heart" s={16} /><span>Antes de começar</span></div><p className="mut">Uma conversa sincera sobre como eu comecei. Leia antes de planejar o ano.</p></Link>

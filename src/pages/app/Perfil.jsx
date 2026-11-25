@@ -10,6 +10,7 @@ const WHATS = (import.meta.env.VITE_WHATSAPP || '').replace(/\D/g, '')
 const EMAIL = import.meta.env.VITE_EMAIL_CONTATO || ''
 import { IG_URL } from '../../data/content'
 import Preco from '../../components/Preco'
+import { AssinarAgora } from '../../lib/bloqueio'
 
 const dataBR = (d) => d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
 const MARCA = 'pdc:checkout'
@@ -122,6 +123,8 @@ export default function Perfil() {
 
       <Card title="Assinatura" icon="spark" color="var(--violet)">
         <div className={'subst ' + (access ? 'ok' : 'no')}>{statusTxt}</div>
+        {!DEMO && st === 'trialing' && sub?.provider_subscription_id && !sub?.pagou_em && <><p className="mut sm">No teste grátis, os meses à frente, o financeiro avançado e o desafio de 90 dias ficam bloqueados. Quer liberar tudo agora?</p><AssinarAgora /></>}
+        {sub?.preco_promo_ate && sub?.valor_apos_promo && <p className="mut sm">Seu preço promocional vale até {dataBR(sub.preco_promo_ate)}. Depois, a mensalidade passa a {Number(sub.valor_apos_promo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.</p>}
         {podeCancelar && <Cancelar />}
         {!DEMO && (st === 'canceled' || st === 'past_due') && <Assinar teste={false} botao={st === 'past_due' ? 'Atualizar cartão e assinar' : undefined} />}
         {!DEMO && <button className="link sm" onClick={auth.refreshSub}>Atualizar status</button>}

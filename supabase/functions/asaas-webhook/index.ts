@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
         }
         const sub = (await acha('provider_subscription_id', p.subscription)) || (await acha('provider_customer_id', p.customer))
         if (sub && p.subscription) {
-          await salva(sub.user_id, { status: 'active', provider_subscription_id: p.subscription, current_period_end: maisUmMes(String(p.dueDate || agora).slice(0, 10)) })
+          await salva(sub.user_id, { status: 'active', provider_subscription_id: p.subscription, current_period_end: maisUmMes(String(p.dueDate || agora).slice(0, 10)), pagou_em: sub.pagou_em || agora })
           try { await premiaIndicacao(sub) } catch (e) { console.error('indicação', (e as Error).message) }
         }
         break

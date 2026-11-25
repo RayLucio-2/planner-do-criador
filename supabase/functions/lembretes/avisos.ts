@@ -71,3 +71,34 @@ export async function avisosEmail(db: any) {
   }
   return n
 }
+
+// Fim do preço da promoção (12 meses): avisa 15 dias antes e, no dia, muda o valor da assinatura no Asaas
+export async function reajustePromo(db: any) {
+  let n = 0
+  const agora = Date.now()
+  const pessoa = async (uid: string) => { const { data } = await db.auth.admin.getUserById(uid); return data?.user }
+  // aviso
+  const em15 = new Date(agora + 15 * 864e5).toISOString()
+  const { data: avisar } = await db.from('subscriptions').select('user_id,preco_promo_ate,valor_apos_promo').in('status', ['active', 'trialing']).not('valor_apos_promo', 'is', null).is('email_reajuste_em', null).lt('preco_promo_ate', em15).limit(LIMITE)
+  for (const s of avisar || []) {
+    const u = await pessoa(s.user_id); if (!u?.email) continue
+    const nome = esc(String(u.user_metadata?.nome || '').trim().split(' ')[0])
+    const quando = dataBR(s.preco_promo_ate); const valor = brl(Number(s.valor_apos_promo))
+    try {
+      await enviarEmail(u.email, 'Seu preço promocional está terminando', modelo({
+        titulo: `${nome ? `${nome}, ` : ''}obrigada por estar com a gente há um ano 💛`,
+        paragrafos: [`Você assinou o Planner do Criador com o preço da promoção, que valia por 12 meses. A partir de <b>${quando}</b>, a mensalidade passa a ser de <b>${valor}</b>.`, 'Não precisa fazer nada para continuar. Se preferir cancelar, é só ir em <b>Perfil › Assinatura</b> antes dessa data.'],
+        botao: 'Ver a minha assinatura', link: `${site()}/#/app/perfil`,
+      }), `A partir de ${quando}, a mensalidade do Planner do Criador passa a ser de ${valor}. Para cancelar, vá em Perfil › Assinatura antes dessa data. ${site()}/#/app/perfil`)
+      await db.from('subscriptions').update({ email_reajuste_em: new Date().toISOString() }).eq('user_id', s.user_id); n++
+    } catch (e) { console.error('aviso reajuste', s.user_id, (e as Error).message) }
+  }
+  // reajuste
+  const { data: vencidos } = await db.from('subscriptions').select('user_id,provider_subscription_id,valor_apos_promo').not('valor_apos_promo', 'is', null).not('provider_subscription_id', 'is', null).lt('preco_promo_ate', new Date(agora).toISOString()).limit(LIMITE)
+  for (const s of vencidos || []) {
+    const r = await asaas(`/subscriptions/${s.provider_subscription_id}`, { method: 'PUT', body: JSON.stringify({ value: Number(s.valor_apos_promo), updatePendingPayments: true }) })
+    if (r.ok || r.status === 404) { await db.from('subscriptions').update({ valor_apos_promo: null }).eq('user_id', s.user_id); n++ }
+    else console.error('reajuste', s.user_id, JSON.stringify(r.body))
+  }
+  return n
+}

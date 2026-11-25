@@ -70,8 +70,10 @@ Deno.serve(async (req) => {
   })
   if (!r.ok || !r.body?.id) return json({ erro: erroAsaas(r.body) }, 400)
 
+  // preço da promoção vale por 12 meses, contados da 1ª cobrança; depois passa para ASAAS_VALOR_DEPOIS
+  const promo = acabou ? {} : (() => { const ate = new Date(primeira); ate.setMonth(ate.getMonth() + 12); return { preco_promo_ate: ate.toISOString(), valor_apos_promo: Number(Deno.env.get('ASAAS_VALOR_DEPOIS') || '29.90') } })()
   await db.from('subscriptions').upsert({
-    user_id: user.id, provider: 'asaas', provider_customer_id: cliente, checkout_id: r.body.id,
+    user_id: user.id, provider: 'asaas', provider_customer_id: cliente, checkout_id: r.body.id, ...promo,
     status: sub?.status && sub.status !== 'none' ? sub.status : 'pendente', updated_at: new Date().toISOString(),
   })
   return json({ url: `${ASAAS_CHECKOUT()}/checkoutSession/show?id=${r.body.id}`, primeira_cobranca: dataAsaas(primeira, false), teste: !jaTestou })

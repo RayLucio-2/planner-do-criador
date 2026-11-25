@@ -6,12 +6,14 @@ import { mesesDoAno } from '../../data/content'
 import { anoStats, mesStats } from '../../lib/calc'
 import { anoFinanceiro, csvDoAno } from '../../lib/financeiro'
 import { ReceberLista } from './Mes'
+import { useBloqueio } from '../../lib/bloqueio'
 
 export default function Financeiro() {
   useStoreVersion()
   const ano = useAno(); const meses = mesesDoAno(ano)
   const hoje = new Date(); const atual = meses.find((x) => x.n === hoje.getMonth() + 1 && hoje.getFullYear() === ano) || meses[0]
   const t = anoStats(); const f = anoFinanceiro(ano); const sm = mesStats(atual.k)
+  const { emTeste } = useBloqueio()
   const contratos = f.meses.reduce((s, x) => s + x.n, 0)
   const ticket = contratos ? t.ent / contratos : 0
   const forte = [...f.meses].sort((a, b) => b.ent - a.ent)[0]
@@ -72,8 +74,9 @@ export default function Financeiro() {
       </Card>}
 
       <div className="tiles">
-        <Link to="/app/ferramentas/preco" className="tile"><span className="tile-i"><Ic n="coin" s={18} /></span><b>Calculadora de preço</b><span>Quanto cobrar por hora e por pacote sem trabalhar no prejuízo</span></Link>
-        <button className="tile" onClick={baixar}><span className="tile-i"><Ic n="download" s={18} /></span><b>Planilha do ano</b><span>Baixe entradas, gastos e pró-labore para o contador ou o imposto de renda</span></button>
+        <Link to="/app/ferramentas/preco" className={'tile' + (emTeste ? ' trancado' : '')}><span className="tile-i"><Ic n={emTeste ? 'lock' : 'coin'} s={18} /></span><b>Calculadora de preço</b><span>Quanto cobrar por hora e por pacote sem trabalhar no prejuízo</span></Link>
+        {emTeste ? <Link to="/app/perfil" className="tile trancado"><span className="tile-i"><Ic n="lock" s={18} /></span><b>Planilha do ano</b><span>Libera quando a 1ª mensalidade for paga</span></Link>
+          : <button className="tile" onClick={baixar}><span className="tile-i"><Ic n="download" s={18} /></span><b>Planilha do ano</b><span>Baixe entradas, gastos e pró-labore para o contador ou o imposto de renda</span></button>}
       </div>
     </div>
   )

@@ -7,6 +7,7 @@ import { mesStats } from '../../lib/calc'
 import { CATEGORIAS, STATUS_PROP, situacao, mesAnterior, maisUmMes, lista } from '../../lib/financeiro'
 import { linkAgenda } from '../../lib/agenda'
 import ImportarExtrato from '../../components/ImportarExtrato'
+import { useBloqueio, Bloqueado } from '../../lib/bloqueio'
 
 export function MesesIndex() {
   useStoreVersion()
@@ -32,10 +33,10 @@ export function MesesIndex() {
   )
 }
 function MesCard({ m }) {
-  const s = mesStats(m.k); const ano = useAno()
+  const s = mesStats(m.k); const ano = useAno(); const { mesLiberado } = useBloqueio(); const lib = mesLiberado(m.n, ano)
   return (
-    <Link to={`/app/mes/${m.k}`} className="mcard" style={{ '--c': m.cor }}>
-      <div className="mcard-h"><b>{m.nome}</b><span>{String(m.n).padStart(2, '0')}</span></div>
+    <Link to={`/app/mes/${m.k}`} className={'mcard' + (lib ? '' : ' trancado')} style={{ '--c': m.cor }}>
+      <div className="mcard-h"><b>{m.nome}</b>{lib ? <span>{String(m.n).padStart(2, '0')}</span> : <Ic n="lock" s={15} />}</div>
       <p>{foco(m.n, ano)[0]}</p>
       <div className="mcard-s"><span><Ic n="play" s={12} /> {s.postados}</span><span><Ic n="trophy" s={12} /> {int(s.con)}</span><span><Ic n="coin" s={12} /> {brl(s.ent).replace(',00', '')}</span></div>
     </Link>
@@ -46,6 +47,7 @@ const TABS = [['', 'Visão', 'cal'], ['editorial', 'Editorial', 'grid'], ['seman
 
 export function Mes() {
   const ano = useAno(); const YEAR = ano; const DATAS = datasDoAno(ano)
+  const { mesLiberado } = useBloqueio()
   const { m: mk, tab = '' } = useParams()
   const m = MES[mk]
   const vis = mesesDoAno(ano)
@@ -63,7 +65,7 @@ export function Mes() {
         {next ? <Link to={`/app/mes/${next.k}/${tab}`} className="mnav"><Ic n="right" s={18} w={2.4} /></Link> : <span className="mnav" />}
       </div>
       <nav className="mtabs">{TABS.map(([t, l, ic]) => <NavLink key={t} end to={`/app/mes/${mk}${t ? '/' + t : ''}`} className={({ isActive }) => (isActive ? 'on' : '')}><Ic n={ic} s={15} /><span>{l}</span></NavLink>)}</nav>
-      <Entry k={`${mk}.${ek}`}><Comp m={m} /></Entry>
+      {mesLiberado(m.n, ano) ? <Entry k={`${mk}.${ek}`}><Comp m={m} /></Entry> : <Bloqueado titulo={`${m.nome} libera quando você assinar`} texto="No teste grátis, o mês atual e o próximo ficam abertos para você planejar. O resto do ano libera com a 1ª mensalidade paga." />}
     </div>
   )
 }

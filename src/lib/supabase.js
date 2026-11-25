@@ -17,5 +17,7 @@ const ddmm = (s) => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : ''
 export const PRECO = PROMO_ATIVA ? (import.meta.env.VITE_PRECO || 'R$ 19,90') : (import.meta.env.VITE_PRECO_DE || import.meta.env.VITE_PRECO || 'R$ 19,90')
 export const PRECO_DE = PROMO_ATIVA ? (import.meta.env.VITE_PRECO_DE || '') : ''
 export const PROMO = PROMO_ATIVA ? `${import.meta.env.VITE_PROMO}${PROMO_ATE ? ` até ${ddmm(PROMO_ATE)}` : ''}` : ''
+// quanto tempo o preço da promoção vale para quem assina durante ela
+export const PROMO_MESES = 12
 export const PRECO_PDF = import.meta.env.VITE_PRECO_PDF || 'R$ 8,99'
 export const DIAS_TESTE = import.meta.env.VITE_DIAS_TESTE || '7'

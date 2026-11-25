@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Ic, Md, Head, Card, Checklist, Rows, Entry, Tip, Tweet, A, Field } from '../../components/ui'
 import { LICOES } from '../../data/content'
+import { useBloqueio, Bloqueado } from '../../lib/bloqueio'
 import { useEntry, setField, useStoreVersion, getEntry } from '../../lib/store'
 
 export function GuiaIndex() {
@@ -17,11 +18,12 @@ export function GuiaIndex() {
 }
 function LessonLink({ l }) {
   const d = useEntry(l.id)
+  const { emTeste } = useBloqueio(); const tranca = l.id === 'd90' && emTeste
   const total = l.blocos.filter((b) => b.tipo === 'check').reduce((s, b) => s + b.itens.length, 0)
   const feitos = Object.entries(d).filter(([k, v]) => /^c\d+\.\d+$/.test(k) && v).length
   return (
     <Link to={`/app/guia/${l.id}`} className="row-link" style={{ '--c': l.cor }}>
-      <span className="rl-n" style={{ background: l.cor }}><Ic n={l.icon} s={16} /></span>
+      <span className="rl-n" style={{ background: l.cor }}><Ic n={tranca ? 'lock' : l.icon} s={16} /></span>
       <div><small>{l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'}{d.feita && <em className="feita"> · concluída ✓</em>}</small><b>{l.titulo}</b><span>{l.sub}</span>
         {total > 0 && <div className="prog"><i style={{ width: `${(feitos / total) * 100}%`, background: l.cor }} /></div>}</div>
       <Ic n="right" s={16} />
@@ -31,6 +33,7 @@ function LessonLink({ l }) {
 
 export function Licao() {
   const { id } = useParams()
+  const { emTeste } = useBloqueio()
   const i = LICOES.findIndex((x) => x.id === id); const l = LICOES[i]
   if (!l) return <div className="page">Lição não encontrada.</div>
   const prev = LICOES[i - 1], next = LICOES[i + 1]
@@ -38,8 +41,10 @@ export function Licao() {
     <Entry k={l.id}>
       <div className="page">
         <Head icon={l.icon} title={l.titulo} sub={l.sub} kicker={l.n ? `lição ${String(l.n).padStart(2, '0')}` : 'desafio'} color={l.cor} back="/app/guia" />
+        {l.id === 'd90' && emTeste ? <Bloqueado titulo="O desafio de 90 dias é para assinantes" texto="Os seus primeiros 90 dias, passo a passo, liberam quando a 1ª mensalidade for paga." /> : <>
         {l.intro && <p className="cap"><Md t={l.intro} /></p>}
         {l.blocos.map((b, j) => <Bloco key={j} b={b} j={j} />)}
+        </>}
         <Card title="Anotações" icon="note"><A f="notas" rows={4} ph="Escreva aqui…" /></Card>
         <Concluir id={l.id} />
         <div className="pn">

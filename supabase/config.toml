@@ -27,3 +27,6 @@ verify_jwt = false   # compra do PDF sem conta no app; a função valida os dado
 
 [functions.baixar-pdf]
 verify_jwt = false   # link do e-mail; a função confere o id e o token da compra
+
+[functions.asaas-assinar-agora]
+verify_jwt = true
