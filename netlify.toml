@@ -15,4 +15,6 @@
   VITE_PROMO = "Black Friday"
   VITE_PRECO_PDF = "R$ 8,99"
   VITE_EMPRESA = "Télora Produtora"
+  # Contato que aparece na ajuda do app e nos termos de uso
+  VITE_EMAIL_CONTATO = "teloraprodutora@gmail.com"
   VITE_CIDADE = "Goiânia/GO"
