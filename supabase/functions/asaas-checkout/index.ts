@@ -33,7 +33,11 @@ Deno.serve(async (req) => {
   const { cityName: _c, state: _s, ...endereco } = end
 
   const { data: sub } = await db.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle()
-  if (sub?.status === 'active' || (sub?.status === 'trialing' && sub?.trial_end && new Date(sub.trial_end) > new Date() && sub?.provider === 'asaas'))
+  // acesso cortesia (liberado à mão): pode assinar quando terminar
+  const cortesia = sub?.provider === 'cortesia'
+  if (cortesia && sub?.current_period_end && new Date(sub.current_period_end) > new Date())
+    return json({ erro: 'Seu acesso cortesia ainda está valendo.' }, 409)
+  if ((sub?.status === 'active' && !cortesia) || (sub?.status === 'trialing' && sub?.trial_end && new Date(sub.trial_end) > new Date() && sub?.provider === 'asaas'))
     return json({ erro: 'Sua assinatura já está ativa.' }, 409)
 
   // 1) cliente no Asaas (reaproveita se já existir)
@@ -74,7 +78,7 @@ Deno.serve(async (req) => {
   const promo = acabou ? {} : (() => { const ate = new Date(primeira); ate.setMonth(ate.getMonth() + 12); return { preco_promo_ate: ate.toISOString(), valor_apos_promo: Number(Deno.env.get('ASAAS_VALOR_DEPOIS') || '29.90') } })()
   await db.from('subscriptions').upsert({
     user_id: user.id, provider: 'asaas', provider_customer_id: cliente, checkout_id: r.body.id, ...promo,
-    status: sub?.status && sub.status !== 'none' ? sub.status : 'pendente', updated_at: new Date().toISOString(),
+    status: sub?.status && sub.status !== 'none' && !cortesia ? sub.status : 'pendente', updated_at: new Date().toISOString(),
   })
   return json({ url: `${ASAAS_CHECKOUT()}/checkoutSession/show?id=${r.body.id}`, primeira_cobranca: dataAsaas(primeira, false), teste: !jaTestou })
 })
