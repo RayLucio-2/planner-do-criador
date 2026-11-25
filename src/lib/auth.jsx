@@ -52,7 +52,8 @@ export function AuthProvider({ children }) {
     },
     async signUp(email, password, nome) {
       if (DEMO) return value.signIn()
-      return supabase.auth.signUp({ email, password, options: { data: { nome, termos: 'sim' }, emailRedirectTo: location.origin + location.pathname } })
+      let ref = ''; try { ref = localStorage.getItem('pdc:ref') || '' } catch (e) { /* ok */ }
+      return supabase.auth.signUp({ email, password, options: { data: { nome, termos: 'sim', ...(ref ? { ref } : {}) }, emailRedirectTo: location.origin + location.pathname } })
     },
     async reset(email) {
       return supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname })

@@ -47,7 +47,10 @@ Deno.serve(async (req) => {
   }
 
   // 2) página de pagamento: cartão, mensal, 1ª cobrança em 7 dias
-  const valor = Number(Deno.env.get('ASAAS_VALOR') || '19.90')
+  // Promoção com data para acabar: depois de ASAAS_PROMO_ATE (padrão 30/11/2026), cobra ASAAS_VALOR_DEPOIS (padrão 29.90)
+  const promoAte = Deno.env.get('ASAAS_PROMO_ATE') ?? '2026-11-30'
+  const acabou = !!promoAte && Date.now() > new Date(`${promoAte}T23:59:59-03:00`).getTime()
+  const valor = Number(acabou ? (Deno.env.get('ASAAS_VALOR_DEPOIS') || '29.90') : (Deno.env.get('ASAAS_VALOR') || '19.90'))
   const site = (Deno.env.get('SITE_URL') || '').replace(/\/$/, '')
   // quem já usou o teste grátis antes paga a partir de hoje
   const jaTestou = !!sub?.provider_subscription_id || (sub?.status === 'canceled')

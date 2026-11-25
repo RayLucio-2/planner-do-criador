@@ -49,11 +49,36 @@ export function Assinar({ teste = true, botao }) {
   )
 }
 
+// Indique uma amiga: quando ela assinar e pagar a 1ª mensalidade, as duas ganham 1 mês grátis
+function Indicar() {
+  const { user, sub } = useAuth(); const [lista, setLista] = useState(null); const [ok, setOk] = useState('')
+  const codigo = (user?.id || '').slice(0, 8)
+  const link = `${location.origin}${location.pathname}#/?ref=${codigo}`
+  useEffect(() => { if (user) supabase.from('indicacoes').select('status').then(({ data }) => setLista(data || [])) }, [user?.id])
+  async function compartilhar() {
+    const texto = `Estou usando o Planner do Criador para organizar meus conteúdos e contratos. Testa 7 dias grátis pelo meu link: ${link}`
+    try { if (navigator.share) { await navigator.share({ title: 'Planner do Criador', text: texto }); return } } catch (e) { return }
+    try { await navigator.clipboard.writeText(texto); setOk('Link copiado! Cole no WhatsApp ou no Direct.') } catch (e) { setOk(link) }
+  }
+  const premiadas = (lista || []).filter((x) => x.status === 'premiada').length
+  return (
+    <Card title="Indique uma amiga" icon="users" color="#10B981">
+      <p className="sm">Quando a sua amiga assinar pelo seu link e pagar a 1ª mensalidade, <b>vocês duas ganham 1 mês grátis</b>: a próxima mensalidade de cada uma não é cobrada.</p>
+      <div className="ind-l"><code>{link}</code></div>
+      <button className="btn full" onClick={compartilhar}><Ic n="send" s={16} /> Compartilhar meu link</button>
+      {ok && <p className="note">{ok}</p>}
+      {lista && lista.length > 0 && <div className="kv"><span>{lista.length} {lista.length === 1 ? 'amiga indicada' : 'amigas indicadas'} · {premiadas} {premiadas === 1 ? 'já assinou' : 'já assinaram'}</span>{sub?.meses_gratis > 0 && <b>{sub.meses_gratis} {sub.meses_gratis === 1 ? 'mês grátis' : 'meses grátis'} a usar</b>}</div>}
+    </Card>
+  )
+}
+
+const MOTIVOS = ['Está caro para mim agora', 'Não tive tempo de usar', 'Achei difícil de usar', 'Faltou algo que eu precisava', 'Prefiro o PDF ou o papel', 'Outro motivo']
 function Cancelar() {
   const auth = useAuth(); const [abrir, setAbrir] = useState(false); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('')
+  const [motivo, setMotivo] = useState(''); const [obs, setObs] = useState('')
   async function cancelar() {
     setBusy(true); setMsg('')
-    const { data, error } = await supabase.functions.invoke('asaas-cancelar', { method: 'POST' })
+    const { data, error } = await supabase.functions.invoke('asaas-cancelar', { method: 'POST', body: { motivo: [motivo, obs.trim()].filter(Boolean).join(' · ') } })
     setBusy(false)
     if (error || data?.erro) { setMsg(data?.erro || 'Não consegui cancelar agora. Tente de novo em instantes.'); return }
     setAbrir(false); auth.refreshSub()
@@ -62,6 +87,9 @@ function Cancelar() {
   return (
     <div className="cancelar">
       <p className="sm">Tem certeza? Você continua usando até o fim do período já liberado e não será cobrada de novo.</p>
+      <p className="sm"><b>Pode contar por que está cancelando?</b> Isso ajuda a melhorar o planner.</p>
+      <div className="motivos">{MOTIVOS.map((m) => <button key={m} className={'mchip' + (motivo === m ? ' on' : '')} aria-pressed={motivo === m} onClick={() => setMotivo(motivo === m ? '' : m)}>{m}</button>)}</div>
+      <textarea className="in ta" rows={2} placeholder="Quer contar mais? (opcional)" value={obs} onChange={(e) => setObs(e.target.value)} />
       <div className="g2 tight"><button className="btn ghost" onClick={() => setAbrir(false)}>Voltar</button><button className="btn danger-f" disabled={busy} onClick={cancelar}>{busy ? 'Cancelando…' : 'Sim, cancelar'}</button></div>
       {msg && <p className="note err">{msg}</p>}
     </div>
@@ -101,6 +129,8 @@ export default function Perfil() {
 
       <Card title="Lembretes" icon="spark" color="var(--pink)"><Lembretes /></Card>
 
+
+      {!DEMO && <Indicar />}
 
       <Card title="Precisa de ajuda?" icon="help" color="var(--violet)">
         <p className="mut sm">Ficou com dúvida ou algo não funcionou? Fale com a gente, respondemos rapidinho.</p>

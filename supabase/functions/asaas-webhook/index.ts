@@ -1,9 +1,12 @@
 // Recebe os avisos do Asaas: mantém a tabela subscriptions em dia e entrega o PDF vendido.
 // Segredos: ASAAS_WEBHOOK_TOKEN (o mesmo cadastrado no webhook do Asaas)
-// Eventos usados: CHECKOUT_PAID, SUBSCRIPTION_CREATED/UPDATED/INACTIVATED/DELETED,
+// Indique uma amiga: quando a indicada paga a 1ª mensalidade, as duas ganham 1 mês grátis
+//   (a próxima mensalidade pendente de cada uma é apagada no Asaas; PAYMENT_CREATED aplica o crédito guardado).
+// Eventos usados: PAYMENT_CREATED, CHECKOUT_PAID, SUBSCRIPTION_CREATED/UPDATED/INACTIVATED/DELETED,
 //                 PAYMENT_CONFIRMED/RECEIVED/OVERDUE/CREDIT_CARD_CAPTURE_REFUSED/REFUNDED
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { entregarPdf } from '../_shared/pdf.ts'
+import { asaas } from '../_shared/asaas.ts'
 
 const ok = (b: unknown = { ok: true }) => new Response(JSON.stringify(b), { headers: { 'Content-Type': 'application/json' } })
 const DIAS_TESTE = 7
@@ -36,8 +39,44 @@ Deno.serve(async (req) => {
   const salva = (user_id: string, campos: Record<string, unknown>) =>
     db.from('subscriptions').update({ ...campos, updated_at: agora }).eq('user_id', user_id)
 
+  // aplica os meses grátis guardados: apaga a próxima mensalidade pendente no Asaas e estende o acesso
+  const aplicaCredito = async (sub: any, pagamento?: any) => {
+    if (!sub?.provider_subscription_id || !(sub.meses_gratis > 0)) return
+    let pend = pagamento
+    if (!pend) {
+      const r = await asaas(`/payments?subscription=${sub.provider_subscription_id}&status=PENDING&limit=10`)
+      pend = (r.ok ? (r.body?.data || []) : []).sort((a: any, b: any) => String(a.dueDate).localeCompare(String(b.dueDate)))[0]
+    }
+    if (!pend?.id || pend.status !== 'PENDING') return
+    const del = await asaas(`/payments/${pend.id}`, { method: 'DELETE' })
+    if (!del.ok) { console.error('não apagou a mensalidade do mês grátis', pend.id, JSON.stringify(del.body)); return }
+    const fim = maisUmMes(String(pend.dueDate).slice(0, 10))
+    const atual = sub.current_period_end ? new Date(sub.current_period_end).getTime() : 0
+    await salva(sub.user_id, { meses_gratis: sub.meses_gratis - 1, current_period_end: new Date(Math.max(atual, new Date(fim).getTime())).toISOString() })
+  }
+  // 1ª mensalidade paga por quem foi indicada: prêmio para as duas
+  const premiaIndicacao = async (sub: any) => {
+    const { data: ind } = await db.from('indicacoes').select('*').eq('indicada', sub.user_id).eq('status', 'aguardando').maybeSingle()
+    if (!ind) return
+    await db.from('indicacoes').update({ status: 'premiada', premiada_em: agora }).eq('id', ind.id)
+    for (const uid of [ind.indicada, ind.indicadora]) {
+      const { data: s } = await db.from('subscriptions').select('*').eq('user_id', uid).maybeSingle()
+      if (!s) continue
+      const novo = { ...s, meses_gratis: (s.meses_gratis || 0) + 1 }
+      await salva(s.user_id, { meses_gratis: novo.meses_gratis })
+      try { await aplicaCredito(novo) } catch (e) { console.error('mês grátis', uid, (e as Error).message) }
+    }
+  }
+
   try {
     switch (ev.event) {
+      case 'PAYMENT_CREATED': {
+        const p = ev.payment || {}
+        if (!p.subscription) break
+        const sub = await acha('provider_subscription_id', p.subscription)
+        if (sub?.meses_gratis > 0) await aplicaCredito(sub, p)
+        break
+      }
       case 'CHECKOUT_PAID': {
         const c = ev.checkout || {}
         const compra = await compraPdf({ checkout: c.id, ref: c.externalReference })
@@ -78,7 +117,10 @@ Deno.serve(async (req) => {
           break
         }
         const sub = (await acha('provider_subscription_id', p.subscription)) || (await acha('provider_customer_id', p.customer))
-        if (sub && p.subscription) await salva(sub.user_id, { status: 'active', provider_subscription_id: p.subscription, current_period_end: maisUmMes(String(p.dueDate || agora).slice(0, 10)) })
+        if (sub && p.subscription) {
+          await salva(sub.user_id, { status: 'active', provider_subscription_id: p.subscription, current_period_end: maisUmMes(String(p.dueDate || agora).slice(0, 10)) })
+          try { await premiaIndicacao(sub) } catch (e) { console.error('indicação', (e as Error).message) }
+        }
         break
       }
       case 'PAYMENT_OVERDUE':

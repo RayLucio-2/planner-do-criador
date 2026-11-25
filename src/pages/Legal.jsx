@@ -5,7 +5,7 @@ const EMPRESA = import.meta.env.VITE_EMPRESA || 'Télora Produtora'
 const CNPJ = import.meta.env.VITE_CNPJ || '[preencher CNPJ]'
 const EMAIL = import.meta.env.VITE_EMAIL_CONTATO || '[preencher e-mail de contato]'
 const CIDADE = import.meta.env.VITE_CIDADE || '[preencher cidade/UF]'
-const PRECO = import.meta.env.VITE_PRECO || 'R$ 19,90'
+import { PRECO, PROMO_ATIVA, PROMO } from '../lib/supabase'
 const PRECO_PDF = import.meta.env.VITE_PRECO_PDF || 'R$ 8,99'
 const DIAS = import.meta.env.VITE_DIAS_TESTE || '7'
 const ATUALIZADO = '5 de novembro de 2026'
@@ -36,10 +36,16 @@ export function Termos() {
       <ul>
         <li>Para começar, você cadastra um cartão de crédito no ambiente da plataforma de pagamento (Asaas) e ganha <b>{DIAS} dias grátis</b>. Nada é cobrado no cadastro.</li>
         <li>Se você não cancelar até o fim do teste, a assinatura mensal de <b>{PRECO}</b> é cobrada no cartão no {Number(DIAS) + 1}º dia e renovada automaticamente todo mês.</li>
+        {PROMO_ATIVA && <li><b>Promoção ({PROMO}):</b> quem assinar durante a promoção continua pagando {PRECO} por mês enquanto a assinatura estiver ativa. Se cancelar e assinar de novo depois, vale o preço da época.</li>}
         <li>O teste grátis vale uma vez por pessoa.</li>
         <li>Você pode <b>cancelar quando quiser</b>, em Perfil › Assinatura. O acesso continua até o fim do período já pago e não há multa nem fidelidade.</li>
         <li><b>Direito de arrependimento:</b> por ser uma contratação pela internet, você pode desistir em até 7 dias da primeira cobrança e receber o valor de volta (art. 49 do Código de Defesa do Consumidor). Basta pedir pelo e-mail {EMAIL}.</li>
         <li>Se o preço mudar, avisamos por e-mail com pelo menos 30 dias de antecedência. A mudança vale a partir da renovação seguinte.</li>
+      </ul>
+      <h3>Indique uma amiga</h3>
+      <ul>
+        <li>Quem indica e quem é indicada pelo link pessoal (em Perfil) ganham <b>1 mês grátis</b> cada quando a indicada pagar a 1ª mensalidade. O mês grátis é a próxima mensalidade, que deixa de ser cobrada.</li>
+        <li>Não há limite de indicações. O benefício não vale para contas criadas pela mesma pessoa e pode ser revisto em caso de uso indevido.</li>
       </ul>
       <h3>Compra do PDF</h3>
       <ul>

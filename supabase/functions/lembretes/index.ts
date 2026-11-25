@@ -3,6 +3,7 @@
 // Segredos: supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:seu@email.com CRON_KEY=uma-senha-qualquer
 import webpush from 'npm:web-push@3.6.7'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+import { avisosEmail } from './avisos.ts'
 
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 const NOMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
@@ -39,5 +40,7 @@ Deno.serve(async (req) => {
       }
     }
   }
-  return new Response(JSON.stringify({ enviados }), { headers: { 'Content-Type': 'application/json' } })
+  let emails = 0
+  try { emails = await avisosEmail(db) } catch (e) { console.error('e-mails automáticos', (e as Error).message) }
+  return new Response(JSON.stringify({ enviados, emails }), { headers: { 'Content-Type': 'application/json' } })
 })

@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
   const jwt = (req.headers.get('Authorization') || '').replace('Bearer ', '')
   const { data: { user } } = await db.auth.getUser(jwt)
   if (!user) return json({ erro: 'Sessão inválida. Entre de novo.' }, 401)
+  let b: any = {}
+  try { b = await req.json() } catch { /* sem corpo */ }
+  const motivo = String(b.motivo || '').slice(0, 500) || null
   const { data: sub } = await db.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle()
   if (!sub) return json({ erro: 'Nenhuma assinatura encontrada.' }, 404)
   if (sub.provider === 'asaas' && sub.provider_subscription_id) {
@@ -19,6 +22,6 @@ Deno.serve(async (req) => {
   }
   const fim = [sub.current_period_end, sub.trial_end].filter(Boolean).map((d: string) => new Date(d).getTime())
   const ate = fim.length ? new Date(Math.max(...fim)).toISOString() : new Date().toISOString()
-  await db.from('subscriptions').update({ status: 'canceled', current_period_end: ate, updated_at: new Date().toISOString() }).eq('user_id', user.id)
+  await db.from('subscriptions').update({ status: 'canceled', current_period_end: ate, cancel_motivo: motivo, cancelado_em: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('user_id', user.id)
   return json({ ok: true, acesso_ate: ate })
 })

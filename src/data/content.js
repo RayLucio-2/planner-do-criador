@@ -150,8 +150,8 @@ export const LICOES = [
     ],
   },
   {
-    id: 'l4', n: 4, cor: '#FF7A2F', icon: 'flyer', titulo: 'O panfleto de porta em porta', sub: 'Como um papel bem pensado me trouxe clientes de verdade',
-    intro: 'Eu escolhi um público, personal trainers, e criei um panfleto só para eles. Não era um panfleto de “faço vídeos”. Era um panfleto que falava do que um personal vive: ser ótimo no treino e não conseguir mostrar isso no Instagram, não ter tempo para gravar, perder aluno para quem aparece mais. Levei pessoalmente em academias e estúdios, conversei e voltei depois. O resultado veio da soma: **panfleto certo + conversa olho no olho + retorno + perfil no Google** para confirmar que eu existia.',
+    id: 'l4', n: 4, cor: '#FF7A2F', icon: 'flyer', titulo: 'O panfleto que traz clientes', sub: 'Como um papel bem pensado abre portas no seu bairro',
+    intro: 'Panfleto ainda funciona, principalmente para quem atende negócios locais. O segredo não está no design: está em escolher um público e escrever para a dor dele. Nada de panfleto de “faço vídeos”. Um bom panfleto fala do que aquela pessoa vive. Para um personal trainer, por exemplo: ser ótimo no treino e não conseguir mostrar isso no Instagram, não ter tempo para gravar, perder aluno para quem aparece mais. Entregue pessoalmente, converse e volte depois. O resultado vem da soma: **panfleto certo + conversa olho no olho + retorno + perfil no Google** para confirmar que você existe.',
     blocos: [
       { tipo: 'numerados', titulo: 'A anatomia do panfleto', itens: [['Título com a dor', '“Você é ótimo no treino, mas o seu Instagram não mostra isso?”'], ['O que você resolve, em uma frase', '“Eu gravo e edito os seus conteúdos para você atrair mais alunos.”'], ['Três benefícios concretos', 'Sem perder tempo gravando sozinho · vídeos com cara profissional · conteúdo pensado para atrair aluno'], ['Prova', 'QR code para o portfólio, antes e depois de um perfil, um depoimento.'], ['Porta de entrada', 'Uma oferta simples para começar: uma análise do perfil ou um pacote inicial.'], ['Contato e rosto', 'Seu nome, sua foto, WhatsApp e QR code. Pessoas contratam pessoas.']] },
       { tipo: 'lista', titulo: 'Erros que deixam o panfleto no lixo', cor: '#E11D48', marca: '✕', itens: ['Texto genérico que serve para qualquer um', 'Informação demais e letra pequena', 'Tabela de preços confusa', 'Copiar o layout e a frase de outra pessoa', 'Não ter nenhum jeito fácil de falar com você'] },
@@ -160,7 +160,7 @@ export const LICOES = [
   },
   {
     id: 'l5', n: 5, cor: '#10B981', icon: 'users', titulo: 'Entenda a dor, não copie ninguém', sub: 'Estudar muito é o atalho que ninguém quer pegar',
-    intro: 'Copiar outro criador parece rápido, mas você copia a forma sem entender o motivo. O panfleto que funcionou para mim não funcionaria para você do mesmo jeito, porque o seu público, a sua cidade e o seu jeito são outros. **O que funciona em qualquer lugar é o método: descobrir as maiores dores do público e agir dentro delas.**',
+    intro: 'Copiar outro criador parece rápido, mas você copia a forma sem entender o motivo. Um panfleto que funcionou para outra pessoa não vai funcionar do mesmo jeito para você, porque o seu público, a sua cidade e o seu jeito são outros. **O que funciona em qualquer lugar é o método: descobrir as maiores dores do público e agir dentro delas.**',
     blocos: [
       { tipo: 'check', titulo: 'Onde as dores aparecem', cor: '#FF3D77', itens: ['Comentários nos perfis do seu nicho', 'Perguntas que chegam no seu direct e no WhatsApp', 'Avaliações no Google de negócios parecidos', 'As conversas de porta em porta', 'Grupos e fóruns onde o seu público conversa', 'O que os seus clientes reclamam antes de fechar'] },
       { tipo: 'vs', a: 'Copiar', b: 'Compreender', itens: [['Pega o formato', 'Entende por que o formato funcionou'], ['Usa a frase do outro', 'Usa a frase do seu público'], ['Funciona uma vez', 'Vira método que se repete'], ['Você vira mais um', 'Você vira referência']] },
@@ -199,3 +199,7 @@ export const CARTA = [
 ]
 
 export const IG_URL = 'https://www.instagram.com/aritamende.s/'
+
+// Depoimentos reais (com autorização) para a página de vendas: [nome, @ ou profissão, texto].
+// Enquanto estiver vazio, a seção não aparece.
+export const DEPOIMENTOS = []

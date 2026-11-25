@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ic } from '../components/ui'
-import { IG_URL } from '../data/content'
+import { IG_URL, DEPOIMENTOS } from '../data/content'
 import { PRECO, PRECO_DE, PROMO, PRECO_PDF, DIAS_TESTE, supabase, DEMO } from '../lib/supabase'
 import Preco from '../components/Preco'
 import { track } from '../lib/analytics'
@@ -148,7 +148,19 @@ function Historia() {
     </section>
   )
 }
-function Rodape() {
+function Depoimentos() {
+  if (!DEPOIMENTOS.length) return null
+  return (
+    <section className="lp-sec">
+      <h2>Quem já usa</h2>
+      <div className="depo">{DEPOIMENTOS.map(([n, q, t]) => (
+        <figure key={n} className="depo-c"><blockquote>“{t}”</blockquote><figcaption><b>{n}</b>{q && <span>{q}</span>}</figcaption></figure>
+      ))}</div>
+    </section>
+  )
+}
+
+export function Rodape() {
   return (
     <footer className="lp-ft">
       <span className="brand">planner<i>.</i>do<i>.</i>criador</span>
@@ -220,6 +232,7 @@ function LandingVendas() {
         </div>
       </section>
 
+      <Depoimentos />
       <ComprarPdf />
 
       <section className="lp-sec lp-price" id="preco">
@@ -285,7 +298,7 @@ function Isca() {
 const mascCep = (v) => v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2')
 const mascCel = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2')
 const mascCpf = (v) => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-function ComprarPdf() {
+export function ComprarPdf() {
   const [nome, setNome] = useState(''); const [email, setEmail] = useState(''); const [cpf, setCpf] = useState('')
   const [cel, setCel] = useState(''); const [cep, setCep] = useState(''); const [num, setNum] = useState('')
   const [aceite, setAceite] = useState(false); const [erro, setErro] = useState(''); const [busy, setBusy] = useState(false)

@@ -13,6 +13,8 @@
   VITE_PRECO = "R$ 19,90"
   VITE_PRECO_DE = "R$ 29,90"
   VITE_PROMO = "Black Friday"
+  # A Black Friday termina sozinha às 23h59 deste dia; depois o site mostra R$ 29,90
+  VITE_PROMO_ATE = "2026-11-30"
   VITE_PRECO_PDF = "R$ 8,99"
   VITE_EMPRESA = "Télora Produtora"
   # Contato que aparece na ajuda do app e nos termos de uso

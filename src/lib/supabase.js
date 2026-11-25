@@ -9,9 +9,13 @@ export const supabase = DEMO ? null : createClient(url, key, {
   auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 })
 
-export const PRECO = import.meta.env.VITE_PRECO || 'R$ 19,90'
-// Promoção: preço "de" riscado e nome da campanha. Para encerrar, apague VITE_PRECO_DE e VITE_PROMO no netlify.toml
-export const PRECO_DE = import.meta.env.VITE_PRECO_DE || ''
-export const PROMO = import.meta.env.VITE_PROMO || ''
+// Promoção: preço "de" riscado e nome da campanha. Com VITE_PROMO_ATE (AAAA-MM-DD), ela termina sozinha
+// às 23h59 desse dia (horário de Brasília) e o site volta para o preço "de".
+const PROMO_ATE = import.meta.env.VITE_PROMO_ATE || ''
+export const PROMO_ATIVA = !!import.meta.env.VITE_PROMO && (!PROMO_ATE || Date.now() <= new Date(`${PROMO_ATE}T23:59:59-03:00`).getTime())
+const ddmm = (s) => s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : ''
+export const PRECO = PROMO_ATIVA ? (import.meta.env.VITE_PRECO || 'R$ 19,90') : (import.meta.env.VITE_PRECO_DE || import.meta.env.VITE_PRECO || 'R$ 19,90')
+export const PRECO_DE = PROMO_ATIVA ? (import.meta.env.VITE_PRECO_DE || '') : ''
+export const PROMO = PROMO_ATIVA ? `${import.meta.env.VITE_PROMO}${PROMO_ATE ? ` até ${ddmm(PROMO_ATE)}` : ''}` : ''
 export const PRECO_PDF = import.meta.env.VITE_PRECO_PDF || 'R$ 8,99'
 export const DIAS_TESTE = import.meta.env.VITE_DIAS_TESTE || '7'

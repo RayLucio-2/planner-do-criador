@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { HashRouter, MemoryRouter, Routes, Route, Navigate } from 'react-router-dom'
+// link de indicação: guarda o código (?ref=xxxxxxxx) para usar no cadastro
+try { const r = (location.hash.split('?')[1] || location.search.slice(1)); const ref = new URLSearchParams(r).get('ref'); if (ref && /^[0-9a-f]{8}$/i.test(ref)) localStorage.setItem('pdc:ref', ref.toLowerCase()) } catch (e) { /* ok */ }
 const Router = import.meta.env.VITE_ROUTER === 'memory' ? MemoryRouter : HashRouter
 import './styles.css'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -17,6 +19,7 @@ import BoasVindas from './pages/app/BoasVindas'
 import Convite from './pages/Convite'
 import Financeiro from './pages/app/Financeiro'
 import Busca from './pages/app/Busca'
+import LandingPdf from './pages/LandingPdf'
 import Obrigada from './pages/Obrigada'
 import { Termos, Privacidade } from './pages/Legal'
 import Cookies, { RotaMedida } from './components/Cookies'
@@ -37,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Cookies />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/pdf" element={<LandingPdf />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
         <Route path="/boas-vindas" element={<Guard><BoasVindas /></Guard>} />
